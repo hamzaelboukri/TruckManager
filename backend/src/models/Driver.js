@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const driverSchema = new mongoose.Schema(
   {
@@ -44,4 +44,4 @@ driverSchema.methods.downloadRoutePDF = async function(routeId) {
   };
 };
 
-module.exports = mongoose.model('Driver', driverSchema);
+export default mongoose.model('Driver', driverSchema);

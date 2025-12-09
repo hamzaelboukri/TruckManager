@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const adminSchema = new mongoose.Schema(
   {
@@ -28,4 +28,4 @@ adminSchema.methods.createTrailer = async function(trailerData) {
   return await Trailer.create(trailerData);
 };
 
-module.exports = mongoose.model('Admin', adminSchema);
+export default mongoose.model('Admin', adminSchema);

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const reportSchema = new mongoose.Schema(
   {
@@ -61,4 +61,4 @@ reportSchema.methods.generateReport = async function() {
   return reportData;
 };
 
-module.exports = mongoose.model('Report', reportSchema);
+export default mongoose.model('Report', reportSchema);

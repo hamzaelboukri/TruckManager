@@ -1,15 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from 'express';
+import {
   getAllTrucks,
   getTruckById,
   createTruck,
   updateTruck,
   deleteTruck,
   getTrucksByStatus
-} = require('../controllers/truckController');
+} from '../controllers/truckController.js';
 
-// Routes
+const router = express.Router();
+
 router.get('/', getAllTrucks);
 router.get('/:id', getTruckById);
 router.post('/', createTruck);
@@ -17,4 +17,4 @@ router.put('/:id', updateTruck);
 router.delete('/:id', deleteTruck);
 router.get('/status/:status', getTrucksByStatus);
 
-module.exports = router;
+export default router;

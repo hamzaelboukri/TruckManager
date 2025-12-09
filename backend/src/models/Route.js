@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const routeSchema = new mongoose.Schema(
   {
@@ -82,4 +82,4 @@ routeSchema.methods.assignTruck = async function(truckId) {
   return await this.save();
 };
 
-module.exports = mongoose.model('Route', routeSchema);
+export default mongoose.model('Route', routeSchema);

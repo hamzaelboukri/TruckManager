@@ -1,11 +1,9 @@
-module.exports = {
-  User: require('./User'),
-  Admin: require('./Admin'),
-  Driver: require('./Driver'),
-  Truck: require('./Truck'),
-  Trailer: require('./Trailer'),
-  Tire: require('./Tire'),
-  Route: require('./Route'),
-  Report: require('./Report'),
-  MaintenanceRule: require('./MaintenanceRule')
-};
+export { default as User } from './User.js';
+export { default as Admin } from './Admin.js';
+export { default as Driver } from './Driver.js';
+export { default as Truck } from './Truck.js';
+export { default as Trailer } from './Trailer.js';
+export { default as Tire } from './Tire.js';
+export { default as Route } from './Route.js';
+export { default as Report } from './Report.js';
+export { default as MaintenanceRule } from './MaintenanceRule.js';

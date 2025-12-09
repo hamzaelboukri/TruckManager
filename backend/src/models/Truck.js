@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const truckSchema = new mongoose.Schema(
   {
@@ -74,4 +74,4 @@ truckSchema.methods.updateKilometers = function(kilometers) {
   return this.save();
 };
 
-module.exports = mongoose.model('Truck', truckSchema);
+export default mongoose.model('Truck', truckSchema);

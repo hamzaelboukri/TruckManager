@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tireSchema = new mongoose.Schema(
   {
@@ -94,4 +94,4 @@ tireSchema.methods.updateWear = function(newKilometers) {
   return this.save();
 };
 
-module.exports = mongoose.model('Tire', tireSchema);
+export default mongoose.model('Tire', tireSchema);

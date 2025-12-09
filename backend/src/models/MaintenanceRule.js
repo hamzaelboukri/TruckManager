@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const maintenanceRuleSchema = new mongoose.Schema(
   {
@@ -91,4 +91,4 @@ maintenanceRuleSchema.methods.isDue = async function() {
   return { isDue: false };
 };
 
-module.exports = mongoose.model('MaintenanceRule', maintenanceRuleSchema);
+export default mongoose.model('MaintenanceRule', maintenanceRuleSchema);
