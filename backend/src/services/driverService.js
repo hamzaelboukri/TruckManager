@@ -4,7 +4,7 @@ import User from '../models/User.js';
 class DriverService {
   async createDriver(userData, licenseNumber) {
     const user = await User.create({ ...userData, role: 'Driver' });
-    
+
     const driver = await Driver.create({
       user: user._id,
       licenseNumber
@@ -17,7 +17,7 @@ class DriverService {
     const driver = await Driver.findById(driverId)
       .populate('user')
       .populate('assignedRoutes');
-    
+
     if (!driver) {
       throw new Error('Driver not found');
     }
@@ -35,7 +35,7 @@ class DriverService {
       updateData,
       { new: true, runValidators: true }
     ).populate('user');
-    
+
     if (!driver) {
       throw new Error('Driver not found');
     }
@@ -50,7 +50,7 @@ class DriverService {
 
     await User.findByIdAndDelete(driver.user);
     await Driver.findByIdAndDelete(driverId);
-    
+
     return driver;
   }
 

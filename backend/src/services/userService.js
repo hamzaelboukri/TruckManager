@@ -35,7 +35,7 @@ class UserService {
       updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!user) {
       throw new Error('User not found');
     }
@@ -57,7 +57,7 @@ class UserService {
 
   async login(email, password) {
     const user = await this.getUserByEmail(email);
-    
+
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       throw new Error('Invalid credentials');

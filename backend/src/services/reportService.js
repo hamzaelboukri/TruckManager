@@ -51,7 +51,7 @@ class ReportService {
       updateData,
       { new: true, runValidators: true }
     ).populate('route');
-    
+
     if (!report) {
       throw new Error('Report not found');
     }
@@ -76,20 +76,20 @@ class ReportService {
   }
 
   async getFuelConsumptionReports() {
-    return await Report.find({ 
-      reportType: 'FuelConsumption' 
+    return await Report.find({
+      reportType: 'FuelConsumption'
     }).populate('route');
   }
 
   async getMileageReports() {
-    return await Report.find({ 
-      reportType: 'Mileage' 
+    return await Report.find({
+      reportType: 'Mileage'
     }).populate('route');
   }
 
   async getPerformanceDriverReports() {
-    return await Report.find({ 
-      reportType: 'PerformanceDriver' 
+    return await Report.find({
+      reportType: 'PerformanceDriver'
     }).populate('route');
   }
 }

@@ -1,12 +1,12 @@
 import express from 'express';
 import {
-  register,
-  login,
-  logout,
-  getProfile,
-  updateProfile,
-  changePassword,
-  verifyToken
+    register,
+    login,
+    logout,
+    getProfile,
+    updateProfile,
+    changePassword,
+    verifyToken
 } from '../controllers/authController.js';
 import authMiddleware from '../middleware/auth.js';
 

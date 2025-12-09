@@ -6,13 +6,13 @@ class MaintenanceService {
   async createMaintenanceRule(ruleData) {
     const ownerModel = ruleData.vehicleType === 'Truck' ? Truck : Trailer;
     const vehicle = await ownerModel.findById(ruleData.vehicleId);
-    
+
     if (!vehicle) {
       throw new Error(`${ruleData.vehicleType} not found`);
     }
 
     const rule = await MaintenanceRule.createRule(ruleData);
-    return rule;    
+    return rule;
   }
 
   async getMaintenanceRuleById(ruleId) {
@@ -29,23 +29,23 @@ class MaintenanceService {
   }
 
   async getMaintenanceRulesByVehicle(vehicleId, vehicleType) {
-    const rules = await MaintenanceRule.find({ 
-      vehicleId, 
-      vehicleType 
+    const rules = await MaintenanceRule.find({
+      vehicleId,
+      vehicleType
     });
     return rules;
   }
 
   async getMaintenanceRulesByType(maintenanceType) {
-    const rules = await MaintenanceRule.find({ 
-      maintenanceType 
+    const rules = await MaintenanceRule.find({
+      maintenanceType
     }).populate('vehicleId');
     return rules;
   }
 
   async getActiveRules() {
-    const rules = await MaintenanceRule.find({ 
-      isActive: true 
+    const rules = await MaintenanceRule.find({
+      isActive: true
     }).populate('vehicleId');
     return rules;
   }
@@ -56,7 +56,7 @@ class MaintenanceService {
       updateData,
       { new: true, runValidators: true }
     ).populate('vehicleId');
-    
+
     if (!rule) {
       throw new Error('Maintenance rule not found');
     }
@@ -77,7 +77,7 @@ class MaintenanceService {
       { isActive: false },
       { new: true }
     );
-    
+
     if (!rule) {
       throw new Error('Maintenance rule not found');
     }

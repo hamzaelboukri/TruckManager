@@ -2,10 +2,10 @@ import Truck from '../models/Truck.js';
 
 class TruckService {
   async createTruck(truckData) {
-    const existingTruck = await Truck.findOne({ 
-      registrationNumber: truckData.registrationNumber 
+    const existingTruck = await Truck.findOne({
+      registrationNumber: truckData.registrationNumber
     });
-    
+
     if (existingTruck) {
       throw new Error('Truck with this registration number already exists');
     }
@@ -18,7 +18,7 @@ class TruckService {
     const truck = await Truck.findById(truckId)
       .populate('routes')
       .populate('maintenanceRecords');
-    
+
     if (!truck) {
       throw new Error('Truck not found');
     }
@@ -41,7 +41,7 @@ class TruckService {
       updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!truck) {
       throw new Error('Truck not found');
     }
@@ -77,7 +77,7 @@ class TruckService {
       { status },
       { new: true }
     );
-    
+
     if (!truck) {
       throw new Error('Truck not found');
     }

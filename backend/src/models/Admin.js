@@ -18,12 +18,12 @@ const adminSchema = new mongoose.Schema(
 
 adminSchema.index({ user: 1 });
 
-adminSchema.methods.createTruck = async function(truckData) {
+adminSchema.methods.createTruck = async function (truckData) {
   const Truck = mongoose.model('Truck');
   return await Truck.create(truckData);
 };
 
-adminSchema.methods.createTrailer = async function(trailerData) {
+adminSchema.methods.createTrailer = async function (trailerData) {
   const Trailer = mongoose.model('Trailer');
   return await Trailer.create(trailerData);
 };

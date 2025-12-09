@@ -2,81 +2,81 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: [true, 'Name is required'],
-      trim: true,
-      maxlength: [100, 'Name cannot exceed 100 characters']
+    {
+        name: {
+            type: String,
+            required: [true, 'Name is required'],
+            trim: true,
+            maxlength: [100, 'Name cannot exceed 100 characters']
+        },
+        email: {
+            type: String,
+            required: [true, 'Email is required'],
+            unique: true,
+            lowercase: true,
+            trim: true,
+            match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
+        },
+        password: {
+            type: String,
+            required: [true, 'Password is required'],
+            minlength: [6, 'Password must be at least 6 characters'],
+            select: false
+        },
+        phone: {
+            type: String,
+            trim: true,
+            match: [/^[\d\s\+\-\(\)]+$/, 'Please provide a valid phone number']
+        },
+        role: {
+            type: String,
+            enum: ['Admin', 'Driver'],
+            required: [true, 'Role is required']
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        },
+        updatedAt: {
+            type: Date,
+            default: Date.now
+        }
     },
-    email: {
-      type: String,
-      required: [true, 'Email is required'],
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
-    },
-    password: {
-      type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
-      select: false
-    },
-    phone: {
-      type: String,
-      trim: true,
-      match: [/^[\d\s\+\-\(\)]+$/, 'Please provide a valid phone number']
-    },
-    role: {
-      type: String,
-      enum: ['Admin', 'Driver'],
-      required: [true, 'Role is required']
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now
+    {
+        timestamps: true,
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true }
     }
-  },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-  }
 );
 
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-  
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
 });
 
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.methods.login = function() {
-  return {
-    userId: this._id,
-    email: this.email,
-    role: this.role,
-    name: this.name
-  };
+userSchema.methods.login = function () {
+    return {
+        userId: this._id,
+        email: this.email,
+        role: this.role,
+        name: this.name
+    };
 };
 
-userSchema.methods.logout = function() {
-  return true;
+userSchema.methods.logout = function () {
+    return true;
 };
 
 export default mongoose.model('User', userSchema);

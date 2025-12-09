@@ -2,10 +2,10 @@ import Trailer from '../models/Trailer.js';
 
 class TrailerService {
   async createTrailer(trailerData) {
-    const existingTrailer = await Trailer.findOne({ 
-      registrationNumber: trailerData.registrationNumber 
+    const existingTrailer = await Trailer.findOne({
+      registrationNumber: trailerData.registrationNumber
     });
-    
+
     if (existingTrailer) {
       throw new Error('Trailer with this registration number already exists');
     }
@@ -38,7 +38,7 @@ class TrailerService {
       updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!trailer) {
       throw new Error('Trailer not found');
     }
@@ -61,7 +61,7 @@ class TrailerService {
 
     trailer.wearPercentage = wearPercentage;
     await trailer.updateStatus();
-    
+
     return trailer;
   }
 
@@ -77,7 +77,7 @@ class TrailerService {
 
     trailer.currentKilometers = kilometers;
     await trailer.save();
-    
+
     return trailer;
   }
 }

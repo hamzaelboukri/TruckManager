@@ -4,17 +4,17 @@ import Trailer from '../models/Trailer.js';
 
 class TireService {
   async createTire(tireData) {
-    const existingTire = await Tire.findOne({ 
-      serialNumber: tireData.serialNumber 
+    const existingTire = await Tire.findOne({
+      serialNumber: tireData.serialNumber
     });
-    
+
     if (existingTire) {
       throw new Error('Tire with this serial number already exists');
     }
 
     const ownerModel = tireData.ownerType === 'Truck' ? Truck : Trailer;
     const owner = await ownerModel.findById(tireData.owner);
-    
+
     if (!owner) {
       throw new Error(`${tireData.ownerType} not found`);
     }
@@ -37,9 +37,9 @@ class TireService {
   }
 
   async getTiresByOwner(ownerId, ownerType) {
-    const tires = await Tire.find({ 
-      owner: ownerId, 
-      ownerType 
+    const tires = await Tire.find({
+      owner: ownerId,
+      ownerType
     });
     return tires;
   }
@@ -55,7 +55,7 @@ class TireService {
       updateData,
       { new: true, runValidators: true }
     ).populate('owner');
-    
+
     if (!tire) {
       throw new Error('Tire not found');
     }
@@ -81,15 +81,15 @@ class TireService {
   }
 
   async getTiresNeedingReplacement() {
-    const tires = await Tire.find({ 
-      status: 'NeedReplacement' 
+    const tires = await Tire.find({
+      status: 'NeedReplacement'
     }).populate('owner');
     return tires;
   }
 
   async getTiresWithWarning() {
-    const tires = await Tire.find({ 
-      status: 'Warning' 
+    const tires = await Tire.find({
+      status: 'Warning'
     }).populate('owner');
     return tires;
   }

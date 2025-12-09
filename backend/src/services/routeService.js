@@ -4,10 +4,10 @@ import Driver from '../models/Driver.js';
 
 class RouteService {
   async createRoute(routeData) {
-    const existingRoute = await Route.findOne({ 
-      routeNumber: routeData.routeNumber 
+    const existingRoute = await Route.findOne({
+      routeNumber: routeData.routeNumber
     });
-    
+
     if (existingRoute) {
       throw new Error('Route with this number already exists');
     }
@@ -27,7 +27,7 @@ class RouteService {
     }
 
     const route = await Route.create(routeData);
-    
+
     truck.status = 'InRoute';
     await truck.save();
 
@@ -39,7 +39,7 @@ class RouteService {
       .populate('driver')
       .populate('truck')
       .populate('reports');
-    
+
     if (!route) {
       throw new Error('Route not found');
     }
@@ -72,7 +72,7 @@ class RouteService {
       updateData,
       { new: true, runValidators: true }
     ).populate(['driver', 'truck']);
-    
+
     if (!route) {
       throw new Error('Route not found');
     }
