@@ -129,6 +129,7 @@ class RouteService {
         await truck.save();
       }
     }
+    
 
     await route.save();
     return await route.populate(['driver', 'truck']);
