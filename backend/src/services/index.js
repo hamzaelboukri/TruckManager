@@ -1,0 +1,9 @@
+export { default as userService } from './userService.js';
+export { default as adminService } from './adminService.js';
+export { default as driverService } from './driverService.js';
+export { default as truckService } from './truckService.js';
+export { default as trailerService } from './trailerService.js';
+export { default as tireService } from './tireService.js';
+export { default as routeService } from './routeService.js';
+export { default as reportService } from './reportService.js';
+export { default as maintenanceService } from './maintenanceService.js';
