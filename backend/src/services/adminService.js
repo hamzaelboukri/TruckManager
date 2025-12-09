@@ -1,58 +1,86 @@
 import Admin from '../models/Admin.js';
 import User from '../models/User.js';
+import Truck from '../models/Truck.js';
+import Trailer from '../models/Trailer.js';
+import mongoose from 'mongoose';
 
 class AdminService {
-  async createAdmin(userData) {
-    const user = await User.create({ ...userData, role: 'Admin' });
-    
-    const admin = await Admin.create({
-      user: user._id
-    });
 
-    return await admin.populate('user');
+  async createAdmin(userData) {
+    const exists = await User.findOne({ email: userData.email });
+    if (exists) {
+      throw new Error('Email already exists');
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const user = await User.create(
+        [{ ...userData, role: 'Admin' }],
+        { session }
+      );
+
+      const admin = await Admin.create(
+        [{ user: user[0]._id }],
+        { session }
+      );
+
+      await session.commitTransaction();
+      return Admin.findById(admin[0]._id).populate('user');
+
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
   }
 
   async getAdminById(adminId) {
     const admin = await Admin.findById(adminId).populate('user');
-    if (!admin) {
-      throw new Error('Admin not found');
-    }
+    if (!admin) throw new Error('Admin not found');
     return admin;
   }
 
   async getAllAdmins() {
-    const admins = await Admin.find().populate('user');
-    return admins;
+    return Admin.find().populate('user');
   }
 
   async deleteAdmin(adminId) {
-    const admin = await Admin.findById(adminId);
-    if (!admin) {
-      throw new Error('Admin not found');
-    }
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    await User.findByIdAndDelete(admin.user);
-    await Admin.findByIdAndDelete(adminId);
-    
-    return admin;
+    try {
+      const admin = await Admin.findById(adminId).session(session);
+      if (!admin) throw new Error('Admin not found');
+
+      await User.findByIdAndDelete(admin.user).session(session);
+      await Admin.findByIdAndDelete(adminId).session(session);
+
+      await session.commitTransaction();
+      return admin;
+
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
   }
 
   async createTruck(adminId, truckData) {
     const admin = await Admin.findById(adminId);
-    if (!admin) {
-      throw new Error('Admin not found');
-    }
+    if (!admin) throw new Error('Admin not found');
 
-    return await admin.createTruck(truckData);
+    return Truck.create(truckData);
   }
 
   async createTrailer(adminId, trailerData) {
     const admin = await Admin.findById(adminId);
-    if (!admin) {
-      throw new Error('Admin not found');
-    }
+    if (!admin) throw new Error('Admin not found');
 
-    return await admin.createTrailer(trailerData);
+    return Trailer.create(trailerData);
   }
 }
 

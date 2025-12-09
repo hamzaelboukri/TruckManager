@@ -17,10 +17,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
 app.use('/api/v1/trucks', truckRoutes);
-
-// Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
@@ -28,8 +25,6 @@ app.get('/health', (req, res) => {
     database: 'MongoDB Connected'
   });
 });
-
-// Root route
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Welcome to TruckManager API',
@@ -44,12 +39,10 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({

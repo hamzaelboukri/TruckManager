@@ -12,7 +12,7 @@ class MaintenanceService {
     }
 
     const rule = await MaintenanceRule.createRule(ruleData);
-    return rule;
+    return rule;    
   }
 
   async getMaintenanceRuleById(ruleId) {
