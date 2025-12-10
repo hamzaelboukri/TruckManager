@@ -52,10 +52,10 @@ const tireSchema = new mongoose.Schema(
             enum: ['Truck', 'Trailer'],
             required: [true, 'Owner type is required']
         },
-        owner: {
+        vehicle: {
             type: mongoose.Schema.Types.ObjectId,
             refPath: 'ownerType',
-            required: [true, 'Owner reference is required']
+            required: [true, 'Vehicle reference is required']
         }
     },
     {
@@ -67,7 +67,7 @@ const tireSchema = new mongoose.Schema(
 
 tireSchema.index({ serialNumber: 1 });
 tireSchema.index({ status: 1 });
-tireSchema.index({ owner: 1, ownerType: 1 });
+tireSchema.index({ vehicle: 1, ownerType: 1 });
 
 tireSchema.virtual('usageKilometers').get(function () {
     return this.currentKilometers - this.installationKilometers;
