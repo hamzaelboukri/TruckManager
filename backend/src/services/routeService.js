@@ -27,8 +27,8 @@ class RouteService {
     return route;
   }
 
-  async getAllRoutes(filters = {}, options = {}) {
-    const { page = 1, limit = 10, sort = '-createdAt' } = options;
+  async getAllRoutes(options = {}) {
+    const { page = 1, limit = 10, sort = '-createdAt', ...filters } = options;
     const skip = (page - 1) * limit;
 
     const routes = await Route.find(filters)
@@ -41,9 +41,12 @@ class RouteService {
 
     return {
       routes,
-      total,
-      page,
-      pages: Math.ceil(total / limit)
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
     };
   }
 
