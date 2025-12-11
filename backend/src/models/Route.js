@@ -85,15 +85,13 @@ routeSchema.virtual('reports', {
     foreignField: 'route'
 });
 
-// Calculate actual distance traveled based on kilometers
 routeSchema.virtual('actualDistance').get(function () {
     if (this.departureKilometers && this.arrivalKilometers) {
         return this.arrivalKilometers - this.departureKilometers;
     }
-    return null;
+    return null;    
 });
 
-// Calculate fuel consumption rate (L/100km)
 routeSchema.virtual('fuelConsumptionRate').get(function () {
     const actualDist = this.actualDistance;
     if (actualDist && this.fuelVolume && actualDist > 0) {
