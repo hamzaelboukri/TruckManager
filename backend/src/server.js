@@ -9,6 +9,7 @@ import userRoutes from './routes/userRoutes.js';
 import truckRoutes from './routes/truckRoutes.js';
 import tireRoutes from './routes/tireRoutes.js';
 import routeRoutes from './routes/routeRoutes.js';
+import maintenanceRoutes from './routes/maintenanceRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/trucks', truckRoutes);
 app.use('/api/v1/tires', tireRoutes);
 app.use('/api/v1/routes', routeRoutes);
+app.use('/api/v1/maintenance', maintenanceRoutes);
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
