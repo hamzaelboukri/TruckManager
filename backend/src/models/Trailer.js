@@ -11,8 +11,16 @@ const trailerSchema = new mongoose.Schema(
         },
         brand: {
             type: String,
-            required: [true, 'Brand is required'],
             trim: true
+        },
+        model: {
+            type: String,
+            trim: true
+        },
+        type: {
+            type: String,
+            enum: ['Flatbed', 'Refrigerated', 'Tanker', 'Container', 'Van', 'Other'],
+            default: 'Flatbed'
         },
         year: {
             type: Number,
@@ -22,7 +30,7 @@ const trailerSchema = new mongoose.Schema(
         },
         maxCapacity: {
             type: Number,
-            required: [true, 'Max capacity is required'],
+            required: [true, 'Max capacity (kg) is required'],
             min: [0, 'Capacity must be positive']
         },
         currentKilometers: {
@@ -34,34 +42,45 @@ const trailerSchema = new mongoose.Schema(
             type: Date,
             required: [true, 'Purchase date is required']
         },
-        installationKilometers: {
-            type: Number,
-            default: 0,
-            min: [0, 'Installation kilometers cannot be negative']
+        dimensions: {
+            length: {
+                type: Number,
+                min: [0, 'Length must be positive']
+            },
+            width: {
+                type: Number,
+                min: [0, 'Width must be positive']
+            },
+            height: {
+                type: Number,
+                min: [0, 'Height must be positive']
+            }
         },
-        currentKilometers: {
+        numberOfAxles: {
             type: Number,
-            default: 0,
-            min: [0, 'Current kilometers cannot be negative']
-        },
-        wearPercentage: {
-            type: Number,
-            default: 0,
-            min: [0, 'Wear percentage cannot be negative'],
-            max: [100, 'Wear percentage cannot exceed 100']
+            default: 2,
+            min: [1, 'Must have at least 1 axle'],
+            max: [6, 'Cannot exceed 6 axles']
         },
         status: {
             type: String,
-            enum: ['Good', 'Warning', 'NeedReplacement'],
-            default: 'Good'
+            enum: ['Available', 'InUse', 'Maintenance', 'OutOfService'],
+            default: 'Available'
         },
-        ownerType: {
+        condition: {
             type: String,
-            enum: ['Truck', 'Trailer'],
-            required: [true, 'Owner type is required']
+            enum: ['Excellent', 'Good', 'Fair', 'Poor'],
+            default: 'Good'
         },
         lastMaintenanceDate: {
             type: Date
+        },
+        nextMaintenanceKilometers: {
+            type: Number
+        },
+        notes: {
+            type: String,
+            trim: true
         }
     },
     {
@@ -73,26 +92,41 @@ const trailerSchema = new mongoose.Schema(
 
 trailerSchema.index({ registrationNumber: 1 });
 trailerSchema.index({ status: 1 });
-trailerSchema.index({ ownerType: 1 });
+trailerSchema.index({ type: 1 });
+trailerSchema.index({ condition: 1 });
 
 trailerSchema.virtual('age').get(function () {
     return new Date().getFullYear() - this.year;
 });
 
+trailerSchema.virtual('volume').get(function () {
+    if (this.dimensions?.length && this.dimensions?.width && this.dimensions?.height) {
+        return this.dimensions.length * this.dimensions.width * this.dimensions.height;
+    }
+    return null;
+});
+
 trailerSchema.virtual('tires', {
     ref: 'Tire',
     localField: '_id',
-    foreignField: 'owner'
+    foreignField: 'vehicle',
+    match: { ownerType: 'Trailer' }
 });
 
-trailerSchema.methods.updateStatus = function () {
-    if (this.wearPercentage >= 80) {
-        this.status = 'NeedReplacement';
-    } else if (this.wearPercentage >= 60) {
-        this.status = 'Warning';
+trailerSchema.methods.updateCondition = function () {
+    const age = this.age;
+    const km = this.currentKilometers;
+
+    if (age > 15 || km > 500000) {
+        this.condition = 'Poor';
+    } else if (age > 10 || km > 300000) {
+        this.condition = 'Fair';
+    } else if (age > 5 || km > 150000) {
+        this.condition = 'Good';
     } else {
-        this.status = 'Good';
+        this.condition = 'Excellent';
     }
+    
     return this.save();
 };
 
