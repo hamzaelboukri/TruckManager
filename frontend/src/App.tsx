@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { store } from './store/store';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { Home } from './pages/Home/Home';
 import { Login } from './pages/Auth/Login';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 
@@ -14,8 +15,8 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />

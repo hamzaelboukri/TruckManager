@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MongoDB Service
   mongodb:
@@ -37,9 +35,10 @@ services:
       - mongodb
     networks:
       - truckmanager-network
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+    # Volumes commented out for production - uncomment for development hot reload
+    # volumes:
+    #   - ./backend:/app
+    #   - /app/node_modules
 
   # Frontend Service
   frontend:
@@ -56,9 +55,10 @@ services:
       - backend
     networks:
       - truckmanager-network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # Volumes commented out for production - uncomment for development hot reload
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
 
 # Define volumes
 volumes:
