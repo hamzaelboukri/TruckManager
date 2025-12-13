@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import driverRoutes from './routes/driverRoutes.js';
 import truckRoutes from './routes/truckRoutes.js';
 import trailerRoutes from './routes/trailerRoutes.js';
 import tireRoutes from './routes/tireRoutes.js';
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/trucks', truckRoutes);
 app.use('/api/v1/trailers', trailerRoutes);
 app.use('/api/v1/tires', tireRoutes);

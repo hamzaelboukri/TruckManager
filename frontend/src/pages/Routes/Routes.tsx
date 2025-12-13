@@ -115,8 +115,12 @@ export const Routes: React.FC = () => {
 
   const handleCreateRoute = async (routeData: any) => {
     try {
+      // Generate route number
+      const routeNumber = `RT${Date.now()}`;
+      
       await routeService.createRoute({
         ...routeData,
+        routeNumber,
         status: 'Planned' as const
       });
       
