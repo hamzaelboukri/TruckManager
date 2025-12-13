@@ -17,8 +17,8 @@ import {
   Fuel,
   RefreshCw
 } from 'lucide-react';
-import { MapModal } from './components/MapModal';
-import { routeService, RouteData as ApiRouteData } from '../../services/routeService';
+import { MapModal } from '../../components/routes/MapModal';
+import { routeService } from '../../services/routeService';
 import toast from 'react-hot-toast';
 
 interface RouteData {
@@ -115,7 +115,7 @@ export const Routes: React.FC = () => {
 
   const handleCreateRoute = async (routeData: any) => {
     try {
-      const newRoute = await routeService.createRoute({
+      await routeService.createRoute({
         ...routeData,
         status: 'Planned' as const
       });

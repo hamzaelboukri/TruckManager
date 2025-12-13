@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { Home } from './pages/Home/Home';
 import { Login } from './pages/Auth/Login';
+import { Register } from './pages/Auth/Register';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 import { Routes } from './pages/Routes/Routes';
 
@@ -18,6 +19,7 @@ function App() {
           <RouterRoutes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />

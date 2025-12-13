@@ -2,12 +2,13 @@ import Driver from '../models/Driver.js';
 import User from '../models/User.js';
 
 class DriverService {
-  async createDriver(userData, licenseNumber) {
+  async createDriver(userData, licenseNumber, licenseExpiryDate = null) {
     const user = await User.create({ ...userData, role: 'Driver' });
 
     const driver = await Driver.create({
       user: user._id,
-      licenseNumber
+      licenseNumber,
+      ...(licenseExpiryDate && { licenseExpiryDate })
     });
 
     return await driver.populate('user');

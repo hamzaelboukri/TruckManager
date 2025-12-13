@@ -3,9 +3,24 @@ import driverService from '../services/driverService.js';
 
 export const register = async (req, res) => {
     try {
-        const { name, email, password, phone, role, licenseNumber } = req.body;
+        const { 
+            name, 
+            firstName, 
+            lastName, 
+            email, 
+            password, 
+            phone, 
+            phoneNumber,
+            role, 
+            licenseNumber,
+            licenseExpiryDate 
+        } = req.body;
 
-        if (!name || !email || !password || !role) {
+        // Construct full name from firstName + lastName or use name field
+        const fullName = name || (firstName && lastName ? `${firstName} ${lastName}` : null);
+        const phoneValue = phone || phoneNumber;
+
+        if (!fullName || !email || !password || !role) {
             return res.status(400).json({
                 success: false,
                 error: 'Please provide name, email, password, and role'
@@ -22,20 +37,27 @@ export const register = async (req, res) => {
         let result;
         if (role === 'Driver') {
             const driver = await driverService.createDriver(
-                { name, email, password, phone },
-                licenseNumber
+                { 
+                    name: fullName, 
+                    email, 
+                    password, 
+                    phone: phoneValue 
+                },
+                licenseNumber,
+                licenseExpiryDate
             );
             result = {
                 ...driver.user.toObject(),
                 driverId: driver._id,
-                licenseNumber: driver.licenseNumber
+                licenseNumber: driver.licenseNumber,
+                licenseExpiryDate: driver.licenseExpiryDate
             };
         } else {
             const user = await userService.createUser({
-                name,
+                name: fullName,
                 email,
                 password,
-                phone,
+                phone: phoneValue,
                 role
             });
             result = user.toObject();

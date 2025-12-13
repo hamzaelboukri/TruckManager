@@ -13,6 +13,10 @@ const driverSchema = new mongoose.Schema(
             unique: true,
             trim: true,
             uppercase: true
+        },
+        licenseExpiryDate: {
+            type: Date,
+            required: false
         }
     },
     {
