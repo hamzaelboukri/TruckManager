@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Truck as TruckIcon, Edit2, Trash2, Search } from 'lucide-react';
 import { truckService } from '../../services/truckService';
-import { Truck } from '../../types';
+import type { Truck } from '../../types';
 import { toast } from 'react-hot-toast';
 import { MainLayout } from '../../layouts/MainLayout';
 import TruckFormModal from '../../components/trucks/TruckFormModal';

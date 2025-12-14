@@ -1,67 +1,90 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { tireService } from '../../services/tireService';
 import { truckService } from '../../services/truckService';
-import type { Truck } from '../../types';
+import { trailerService } from '../../services/trailerService';
+import type { Tire, Truck, Trailer } from '../../types';
 import { toast } from 'react-hot-toast';
 
-interface TruckFormModalProps {
-  truck: Truck | null;
+interface TireFormModalProps {
+  tire: Tire | null;
   onClose: () => void;
 }
 
-const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
+const TireFormModal = ({ tire, onClose }: TireFormModalProps) => {
   const [formData, setFormData] = useState({
-    registrationNumber: '',
+    serialNumber: '',
     brand: '',
     model: '',
-    year: new Date().getFullYear(),
-    status: 'Available' as 'Available' | 'InUse' | 'Maintenance' | 'OutOfService',
-    condition: 'Good' as 'Excellent' | 'Good' | 'Fair' | 'Poor',
+    size: '',
+    position: '',
+    ownerType: 'Truck' as 'Truck' | 'Trailer',
+    vehicle: '',
+    currentWearPercentage: 0,
+    status: 'Good' as 'Good' | 'Warning' | 'NeedReplacement',
+    purchaseDate: '',
+    installationKilometers: 0,
     currentKilometers: 0,
-    fuelCapacity: 0,
-    currentFuelLevel: 0,
-    lastMaintenanceDate: '',
-    nextMaintenanceKilometers: 0,
   });
 
+  const [vehicles, setVehicles] = useState<(Truck | Trailer)[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (truck) {
+    if (tire) {
       setFormData({
-        registrationNumber: truck.registrationNumber,
-        brand: truck.brand,
-        model: truck.model,
-        year: truck.year,
-        status: truck.status,
-        condition: truck.condition,
-        currentKilometers: truck.currentKilometers,
-        fuelCapacity: truck.fuelCapacity,
-        currentFuelLevel: truck.currentFuelLevel,
-        lastMaintenanceDate: truck.lastMaintenanceDate 
-          ? new Date(truck.lastMaintenanceDate).toISOString().split('T')[0] 
+        serialNumber: tire.serialNumber,
+        brand: tire.brand,
+        model: tire.model,
+        size: tire.size,
+        position: tire.position,
+        ownerType: tire.ownerType,
+        vehicle: tire.vehicle,
+        currentWearPercentage: tire.currentWearPercentage,
+        status: tire.status,
+        purchaseDate: tire.purchaseDate 
+          ? new Date(tire.purchaseDate).toISOString().split('T')[0] 
           : '',
-        nextMaintenanceKilometers: truck.nextMaintenanceKilometers || 0,
+        installationKilometers: tire.installationKilometers,
+        currentKilometers: tire.currentKilometers,
       });
     }
-  }, [truck]);
+  }, [tire]);
+
+  useEffect(() => {
+    fetchVehicles();
+  }, [formData.ownerType]);
+
+  const fetchVehicles = async () => {
+    try {
+      if (formData.ownerType === 'Truck') {
+        const response = await truckService.getAllTrucks({ limit: 100 });
+        setVehicles(response.data || []);
+      } else {
+        const response = await trailerService.getAllTrailers({ limit: 100 });
+        setVehicles(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (truck) {
-        await truckService.updateTruck(truck._id, formData);
-        toast.success('Camion modifié avec succès');
+      if (tire) {
+        await tireService.updateTire(tire._id, formData);
+        toast.success('Pneu modifié avec succès');
       } else {
-        await truckService.createTruck(formData);
-        toast.success('Camion créé avec succès');
+        await tireService.createTire(formData);
+        toast.success('Pneu créé avec succès');
       }
       onClose();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Erreur lors de l\'enregistrement');
-      console.error('Error saving truck:', error);
+      console.error('Error saving tire:', error);
     } finally {
       setLoading(false);
     }
@@ -71,18 +94,36 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['year', 'currentKilometers', 'fuelCapacity', 'currentFuelLevel', 'nextMaintenanceKilometers'].includes(name)
+      [name]: ['currentWearPercentage', 'installationKilometers', 'currentKilometers'].includes(name)
         ? Number(value)
         : value
     }));
   };
+
+  const tirePositions = [
+    'Front Left',
+    'Front Right',
+    'Rear Left Inner',
+    'Rear Left Outer',
+    'Rear Right Inner',
+    'Rear Right Outer',
+    'Spare',
+  ];
+
+  const tireSizes = [
+    '295/80R22.5',
+    '315/80R22.5',
+    '385/65R22.5',
+    '425/65R22.5',
+    '445/65R22.5',
+  ];
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">
-            {truck ? 'Modifier le Camion' : 'Ajouter un Camion'}
+            {tire ? 'Modifier le Pneu' : 'Ajouter un Pneu'}
           </h2>
           <button
             onClick={onClose}
@@ -94,19 +135,19 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Registration Number */}
+            {/* Serial Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Matricule <span className="text-red-500">*</span>
+                Numéro de Série <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="registrationNumber"
-                value={formData.registrationNumber}
+                name="serialNumber"
+                value={formData.serialNumber}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: ABC-123"
+                placeholder="Ex: TIRE-001"
               />
             </div>
 
@@ -122,7 +163,7 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: Volvo"
+                placeholder="Ex: Michelin"
               />
             </div>
 
@@ -138,23 +179,99 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: FH16"
+                placeholder="Ex: X Multi D"
               />
             </div>
 
-            {/* Year */}
+            {/* Size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Année <span className="text-red-500">*</span>
+                Taille <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="size"
+                value={formData.size}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Sélectionner...</option>
+                {tireSizes.map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Position */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Position <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="position"
+                value={formData.position}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Sélectionner...</option>
+                {tirePositions.map((position) => (
+                  <option key={position} value={position}>{position}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Owner Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Type de Véhicule <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="ownerType"
+                value={formData.ownerType}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="Truck">Camion</option>
+                <option value="Trailer">Remorque</option>
+              </select>
+            </div>
+
+            {/* Vehicle */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Véhicule <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="vehicle"
+                value={formData.vehicle}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Sélectionner un véhicule...</option>
+                {vehicles.map((vehicle) => (
+                  <option key={vehicle._id} value={vehicle._id}>
+                    {vehicle.registrationNumber} - {vehicle.brand} {vehicle.model}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Current Wear Percentage */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Usure Actuelle (%) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
-                name="year"
-                value={formData.year}
+                name="currentWearPercentage"
+                value={formData.currentWearPercentage}
                 onChange={handleChange}
                 required
-                min="1990"
-                max={new Date().getFullYear() + 1}
+                min="0"
+                max="100"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -162,7 +279,7 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
             {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Statut <span className="text-red-500">*</span>
+                État <span className="text-red-500">*</span>
               </label>
               <select
                 name="status"
@@ -171,30 +288,42 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="Available">Disponible</option>
-                <option value="InUse">En Service</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="OutOfService">Hors Service</option>
+                <option value="Good">Bon</option>
+                <option value="Warning">Attention</option>
+                <option value="NeedReplacement">À Remplacer</option>
               </select>
             </div>
 
-            {/* Condition */}
+            {/* Purchase Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Condition <span className="text-red-500">*</span>
+                Date d'Achat <span className="text-red-500">*</span>
               </label>
-              <select
-                name="condition"
-                value={formData.condition}
+              <input
+                type="date"
+                name="purchaseDate"
+                value={formData.purchaseDate}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="Excellent">Excellent</option>
-                <option value="Good">Bon</option>
-                <option value="Fair">Moyen</option>
-                <option value="Poor">Mauvais</option>
-              </select>
+              />
+            </div>
+
+            {/* Installation Kilometers */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Kilométrage d'Installation <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="installationKilometers"
+                value={formData.installationKilometers}
+                onChange={handleChange}
+                required
+                min="0"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Ex: 50000"
+              />
             </div>
 
             {/* Current Kilometers */}
@@ -210,72 +339,7 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
                 required
                 min="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: 150000"
-              />
-            </div>
-
-            {/* Fuel Capacity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Capacité Carburant (L) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="fuelCapacity"
-                value={formData.fuelCapacity}
-                onChange={handleChange}
-                required
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: 500"
-              />
-            </div>
-
-            {/* Current Fuel Level */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Niveau Carburant Actuel (L) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="currentFuelLevel"
-                value={formData.currentFuelLevel}
-                onChange={handleChange}
-                required
-                min="0"
-                max={formData.fuelCapacity}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: 250"
-              />
-            </div>
-
-            {/* Last Maintenance Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dernière Maintenance
-              </label>
-              <input
-                type="date"
-                name="lastMaintenanceDate"
-                value={formData.lastMaintenanceDate}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Next Maintenance Kilometers */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prochaine Maintenance (km)
-              </label>
-              <input
-                type="number"
-                name="nextMaintenanceKilometers"
-                value={formData.nextMaintenanceKilometers}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: 170000"
+                placeholder="Ex: 65000"
               />
             </div>
           </div>
@@ -295,7 +359,7 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
               disabled={loading}
             >
-              {loading ? 'Enregistrement...' : truck ? 'Modifier' : 'Créer'}
+              {loading ? 'Enregistrement...' : tire ? 'Modifier' : 'Créer'}
             </button>
           </div>
         </form>
@@ -304,4 +368,4 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
   );
 };
 
-export default TruckFormModal;
+export default TireFormModal;

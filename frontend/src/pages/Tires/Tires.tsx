@@ -1,116 +1,113 @@
 import { useState, useEffect } from 'react';
-import { Plus, TruckIcon, Edit2, Trash2, Search } from 'lucide-react';
-import { trailerService } from '../../services/trailerService';
-import type { Trailer } from '../../types';
+import { Plus, CircleDot, Edit2, Trash2, Search } from 'lucide-react';
+import { tireService } from '../../services/tireService';
+import type { Tire } from '../../types';
 import { toast } from 'react-hot-toast';
 import { MainLayout } from '../../layouts/MainLayout';
-import TrailerFormModal from '../../components/trailers/TrailerFormModal';
+import TireFormModal from '../../components/tires/TireFormModal';
 
-const Trailers = () => {
-  const [trailers, setTrailers] = useState<Trailer[]>([]);
+const Tires = () => {
+  const [tires, setTires] = useState<Tire[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [ownerTypeFilter, setOwnerTypeFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTrailer, setSelectedTrailer] = useState<Trailer | null>(null);
+  const [selectedTire, setSelectedTire] = useState<Tire | null>(null);
 
   useEffect(() => {
-    fetchTrailers();
-  }, [statusFilter, typeFilter]);
+    fetchTires();
+  }, [statusFilter, ownerTypeFilter]);
 
-  const fetchTrailers = async () => {
+  const fetchTires = async () => {
     try {
       setLoading(true);
       const params: any = { limit: 100 };
       if (statusFilter !== 'all') params.status = statusFilter;
-      if (typeFilter !== 'all') params.type = typeFilter;
+      if (ownerTypeFilter !== 'all') params.ownerType = ownerTypeFilter;
       
-      const response = await trailerService.getAllTrailers(params);
-      setTrailers(response.data || []);
+      const response = await tireService.getAllTires(params);
+      setTires(response.data || []);
     } catch (error) {
-      toast.error('Erreur lors du chargement des remorques');
-      console.error('Error fetching trailers:', error);
+      toast.error('Erreur lors du chargement des pneus');
+      console.error('Error fetching tires:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateTrailer = () => {
-    setSelectedTrailer(null);
+  const handleCreateTire = () => {
+    setSelectedTire(null);
     setIsModalOpen(true);
   };
 
-  const handleEditTrailer = (trailer: Trailer) => {
-    setSelectedTrailer(trailer);
+  const handleEditTire = (tire: Tire) => {
+    setSelectedTire(tire);
     setIsModalOpen(true);
   };
 
-  const handleDeleteTrailer = async (id: string) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette remorque?')) return;
+  const handleDeleteTire = async (id: string) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce pneu?')) return;
 
     try {
-      await trailerService.deleteTrailer(id);
-      toast.success('Remorque supprimée avec succès');
-      fetchTrailers();
+      await tireService.deleteTire(id);
+      toast.success('Pneu supprimé avec succès');
+      fetchTires();
     } catch (error) {
-      toast.error('Erreur lors de la suppression de la remorque');
-      console.error('Error deleting trailer:', error);
+      toast.error('Erreur lors de la suppression du pneu');
+      console.error('Error deleting tire:', error);
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setSelectedTrailer(null);
-    fetchTrailers();
+    setSelectedTire(null);
+    fetchTires();
   };
 
-  const filteredTrailers = trailers.filter(trailer => {
+  const filteredTires = tires.filter(tire => {
     const matchesSearch = 
-      trailer.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trailer.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trailer.model.toLowerCase().includes(searchTerm.toLowerCase());
+      tire.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tire.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tire.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tire.position.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Available': return 'bg-green-100 text-green-800';
-      case 'InUse': return 'bg-blue-100 text-blue-800';
-      case 'Maintenance': return 'bg-yellow-100 text-yellow-800';
-      case 'OutOfService': return 'bg-red-100 text-red-800';
+      case 'Good': return 'bg-green-100 text-green-800';
+      case 'Warning': return 'bg-yellow-100 text-yellow-800';
+      case 'NeedReplacement': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getConditionColor = (condition: string) => {
-    switch (condition) {
-      case 'Excellent': return 'text-green-600';
-      case 'Good': return 'text-blue-600';
-      case 'Fair': return 'text-yellow-600';
-      case 'Poor': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
+  const getWearColor = (wear: number) => {
+    if (wear <= 30) return 'text-green-600';
+    if (wear <= 60) return 'text-yellow-600';
+    if (wear <= 80) return 'text-orange-600';
+    return 'text-red-600';
   };
 
   const stats = {
-    total: trailers.length,
-    available: trailers.filter(t => t.status === 'Available').length,
-    inUse: trailers.filter(t => t.status === 'InUse').length,
-    maintenance: trailers.filter(t => t.status === 'Maintenance').length,
+    total: tires.length,
+    good: tires.filter(t => t.status === 'Good').length,
+    warning: tires.filter(t => t.status === 'Warning').length,
+    needReplacement: tires.filter(t => t.status === 'NeedReplacement').length,
   };
 
   return (
     <MainLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Gestion des Remorques</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Gestion des Pneus</h1>
           <button
-            onClick={handleCreateTrailer}
+            onClick={handleCreateTire}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
-            Ajouter une Remorque
+            Ajouter un Pneu
           </button>
         </div>
 
@@ -119,37 +116,37 @@ const Trailers = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">Total Remorques</p>
+                <p className="text-gray-500 text-sm">Total Pneus</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
               </div>
-              <TruckIcon className="w-10 h-10 text-gray-400" />
+              <CircleDot className="w-10 h-10 text-gray-400" />
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">Disponibles</p>
-                <p className="text-2xl font-bold text-green-600">{stats.available}</p>
+                <p className="text-gray-500 text-sm">Bon État</p>
+                <p className="text-2xl font-bold text-green-600">{stats.good}</p>
               </div>
-              <TruckIcon className="w-10 h-10 text-green-400" />
+              <CircleDot className="w-10 h-10 text-green-400" />
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">En Service</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.inUse}</p>
+                <p className="text-gray-500 text-sm">Attention</p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.warning}</p>
               </div>
-              <TruckIcon className="w-10 h-10 text-blue-400" />
+              <CircleDot className="w-10 h-10 text-yellow-400" />
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">Maintenance</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.maintenance}</p>
+                <p className="text-gray-500 text-sm">À Remplacer</p>
+                <p className="text-2xl font-bold text-red-600">{stats.needReplacement}</p>
               </div>
-              <TruckIcon className="w-10 h-10 text-yellow-400" />
+              <CircleDot className="w-10 h-10 text-red-400" />
             </div>
           </div>
         </div>
@@ -161,14 +158,14 @@ const Trailers = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Rechercher par matricule, marque ou modèle..."
+                placeholder="Rechercher par numéro de série, marque, modèle..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-2 overflow-x-auto">
-              {['all', 'Available', 'InUse', 'Maintenance', 'OutOfService'].map((status) => (
+              {['all', 'Good', 'Warning', 'NeedReplacement'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
@@ -178,100 +175,98 @@ const Trailers = () => {
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {status === 'all' ? 'Tous' : status}
+                  {status === 'all' ? 'Tous' : status === 'Good' ? 'Bon' : status === 'Warning' ? 'Attention' : 'À Remplacer'}
                 </button>
               ))}
             </div>
             <div className="flex gap-2 overflow-x-auto">
-              {['all', 'Flatbed', 'Refrigerated', 'Tanker', 'Container', 'Van'].map((type) => (
+              {['all', 'Truck', 'Trailer'].map((type) => (
                 <button
                   key={type}
-                  onClick={() => setTypeFilter(type)}
+                  onClick={() => setOwnerTypeFilter(type)}
                   className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
-                    typeFilter === type
+                    ownerTypeFilter === type
                       ? 'bg-green-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {type === 'all' ? 'Tous Types' : type}
+                  {type === 'all' ? 'Tous Types' : type === 'Truck' ? 'Camion' : 'Remorque'}
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Trailers Grid */}
+        {/* Tires Grid */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           </div>
-        ) : filteredTrailers.length === 0 ? (
+        ) : filteredTires.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
-            <TruckIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">Aucune remorque trouvée</p>
+            <CircleDot className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg">Aucun pneu trouvé</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTrailers.map((trailer) => (
-              <div key={trailer._id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+            {filteredTires.map((tire) => (
+              <div key={tire._id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <TruckIcon className="w-10 h-10 text-blue-600" />
+                      <CircleDot className="w-10 h-10 text-blue-600" />
                       <div>
-                        <h3 className="font-bold text-lg text-gray-900">{trailer.registrationNumber}</h3>
-                        <p className="text-sm text-gray-500">{trailer.brand} {trailer.model}</p>
+                        <h3 className="font-bold text-lg text-gray-900">{tire.serialNumber}</h3>
+                        <p className="text-sm text-gray-500">{tire.brand} {tire.model}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between items-center">
+                      <span className="text-gray-600 text-sm">Taille:</span>
+                      <span className="font-semibold">{tire.size}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 text-sm">Position:</span>
+                      <span className="font-semibold">{tire.position}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600 text-sm">Type:</span>
-                      <span className="font-semibold">{trailer.type}</span>
+                      <span className="font-semibold">{tire.ownerType === 'Truck' ? 'Camion' : 'Remorque'}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600 text-sm">Année:</span>
-                      <span className="font-semibold">{trailer.year}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 text-sm">Capacité Max:</span>
-                      <span className="font-semibold">{trailer.maxCapacity} kg</span>
+                      <span className="text-gray-600 text-sm">Usure:</span>
+                      <span className={`font-semibold ${getWearColor(tire.currentWearPercentage)}`}>
+                        {tire.currentWearPercentage}%
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600 text-sm">Kilométrage:</span>
-                      <span className="font-semibold">{trailer.currentKilometers.toLocaleString()} km</span>
+                      <span className="font-semibold">{tire.currentKilometers.toLocaleString()} km</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600 text-sm">Dimensions:</span>
-                      <span className="font-semibold">
-                        {trailer.dimensions.length}×{trailer.dimensions.width}×{trailer.dimensions.height}m
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 text-sm">Condition:</span>
-                      <span className={`font-semibold ${getConditionColor(trailer.condition)}`}>
-                        {trailer.condition}
-                      </span>
+                      <span className="text-gray-600 text-sm">Installation:</span>
+                      <span className="font-semibold">{tire.installationKilometers.toLocaleString()} km</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between mb-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(trailer.status)}`}>
-                      {trailer.status}
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(tire.status)}`}>
+                      {tire.status === 'Good' ? 'Bon' : tire.status === 'Warning' ? 'Attention' : 'À Remplacer'}
                     </span>
                   </div>
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleEditTrailer(trailer)}
+                      onClick={() => handleEditTire(tire)}
                       className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                       Modifier
                     </button>
                     <button
-                      onClick={() => handleDeleteTrailer(trailer._id)}
+                      onClick={() => handleDeleteTire(tire._id)}
                       className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -283,10 +278,10 @@ const Trailers = () => {
           </div>
         )}
 
-        {/* Trailer Form Modal */}
+        {/* Tire Form Modal */}
         {isModalOpen && (
-          <TrailerFormModal
-            trailer={selectedTrailer}
+          <TireFormModal
+            tire={selectedTire}
             onClose={handleModalClose}
           />
         )}
@@ -295,4 +290,4 @@ const Trailers = () => {
   );
 };
 
-export default Trailers;
+export default Tires;

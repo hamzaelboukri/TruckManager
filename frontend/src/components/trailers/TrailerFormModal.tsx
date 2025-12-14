@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { trailerService } from '../../services/trailerService';
-import { Trailer } from '../../types';
+import type { Trailer } from '../../types';
 import { toast } from 'react-hot-toast';
 
 interface TrailerFormModalProps {

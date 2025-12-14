@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Truck, MapPin, Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { api } from '../../services/api';
 import { toast } from 'react-hot-toast';
-import { Route } from '../../types';
+import type { Route } from '../../types';
 
 interface Statistics {
   totalRoutes: number;

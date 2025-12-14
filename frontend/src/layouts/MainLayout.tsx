@@ -9,7 +9,8 @@ import {
   BarChart3, 
   LogOut,
   Menu,
-  X
+  X,
+  CircleDot
 } from 'lucide-react';
 
 export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -26,6 +27,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
     { name: 'Camions', href: '/trucks', icon: Truck },
     { name: 'Remorques', href: '/trailers', icon: Package },
+    { name: 'Pneus', href: '/tires', icon: CircleDot },
     { name: 'Routes', href: '/routes', icon: RouteIcon },
     { name: 'Maintenance', href: '/maintenance', icon: Wrench },
   ];

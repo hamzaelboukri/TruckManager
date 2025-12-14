@@ -1,5 +1,4 @@
-import React from 'react';
-import { BrowserRouter, Routes as RouterRoutes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes as RouterRoutes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import { store } from './store/store';
@@ -14,6 +13,7 @@ import { Routes } from './pages/Routes/Routes';
 import { DriverRoutes } from './pages/DriverRoutes/DriverRoutes';
 import Trucks from './pages/Trucks/Trucks';
 import Trailers from './pages/Trailers/Trailers';
+import Tires from './pages/Tires/Tires';
 
 function App() {
   return (
@@ -30,6 +30,7 @@ function App() {
               <Route path="/driver-dashboard" element={<DriverDashboard />} />
               <Route path="/trucks" element={<Trucks />} />
               <Route path="/trailers" element={<Trailers />} />
+              <Route path="/tires" element={<Tires />} />
               <Route path="/routes" element={<Routes />} />
               <Route path="/driver-routes" element={<DriverRoutes />} />
               <Route path="/maintenance" element={<Dashboard />} />
