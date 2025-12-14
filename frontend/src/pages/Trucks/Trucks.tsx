@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Plus, Truck as TruckIcon, Edit2, Trash2, Search } from 'lucide-react';
+import { Plus, Truck as TruckIcon, Edit2, Trash2, Search, CircleDot } from 'lucide-react';
 import { truckService } from '../../services/truckService';
-import type { Truck } from '../../types';
+import { tireService } from '../../services/tireService';
+import type { Truck, Tire } from '../../types';
 import { toast } from 'react-hot-toast';
 import { MainLayout } from '../../layouts/MainLayout';
 import TruckFormModal from '../../components/trucks/TruckFormModal';
+import TireListModal from '../../components/trucks/TireListModal';
 
 const Trucks = () => {
   const [trucks, setTrucks] = useState<Truck[]>([]);
@@ -13,6 +15,10 @@ const Trucks = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
+  const [isTireModalOpen, setIsTireModalOpen] = useState(false);
+  const [selectedTruckTires, setSelectedTruckTires] = useState<Tire[]>([]);
+  const [selectedTruckInfo, setSelectedTruckInfo] = useState<{id: string, name: string} | null>(null);
+  const [truckTires, setTruckTires] = useState<Record<string, Tire[]>>({});
 
   useEffect(() => {
     fetchTrucks();
@@ -23,7 +29,22 @@ const Trucks = () => {
       setLoading(true);
       const params = statusFilter !== 'all' ? { status: statusFilter, limit: 100 } : { limit: 100 };
       const response = await truckService.getAllTrucks(params);
-      setTrucks(response.data || []);
+      const trucksData = response.data || [];
+      setTrucks(trucksData);
+      
+      // Fetch tires for each truck
+      const tiresMap: Record<string, Tire[]> = {};
+      await Promise.all(
+        trucksData.map(async (truck) => {
+          try {
+            const tiresResponse = await tireService.getTiresByVehicle(truck._id, 'Truck');
+            tiresMap[truck._id] = tiresResponse.data || [];
+          } catch (error) {
+            tiresMap[truck._id] = [];
+          }
+        })
+      );
+      setTruckTires(tiresMap);
     } catch (error) {
       toast.error('Erreur lors du chargement des camions');
       console.error('Error fetching trucks:', error);
@@ -59,6 +80,18 @@ const Trucks = () => {
     setIsModalOpen(false);
     setSelectedTruck(null);
     fetchTrucks();
+  };
+
+  const handleViewTires = (truck: Truck) => {
+    setSelectedTruckTires(truckTires[truck._id] || []);
+    setSelectedTruckInfo({ id: truck._id, name: truck.registrationNumber });
+    setIsTireModalOpen(true);
+  };
+
+  const handleTireModalClose = () => {
+    setIsTireModalClose(false);
+    setSelectedTruckTires([]);
+    setSelectedTruckInfo(null);
   };
 
   const filteredTrucks = trucks.filter(truck => {
@@ -227,12 +260,50 @@ const Trucks = () => {
                     </div>
                   </div>
 
+                  {/* Tires Section */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <CircleDot className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-semibold text-gray-700">
+                          Pneus ({truckTires[truck._id]?.length || 0})
+                        </span>
+                      </div>
+                    </div>
+                    {truckTires[truck._id]?.length > 0 ? (
+                      <div className="space-y-1">
+                        {truckTires[truck._id].slice(0, 3).map((tire) => (
+                          <div key={tire._id} className="flex items-center justify-between text-xs">
+                            <span className="text-gray-600">{tire.serialNumber}</span>
+                            <span className="text-gray-500">{tire.position}</span>
+                          </div>
+                        ))}
+                        {truckTires[truck._id].length > 3 && (
+                          <div className="text-xs text-blue-600 font-medium">
+                            +{truckTires[truck._id].length - 3} autres...
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400">Aucun pneu assigné</p>
+                    )}
+                  </div>
+
                   <div className="flex items-center justify-between mb-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(truck.status)}`}>
                       {truck.status}
                     </span>
                   </div>
 
+                  <div className="flex gap-2 mb-2">
+                    <button
+                      onClick={() => handleViewTires(truck)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <CircleDot className="w-4 h-4" />
+                      Pneus
+                    </button>
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEditTruck(truck)}
@@ -259,6 +330,17 @@ const Trucks = () => {
           <TruckFormModal
             truck={selectedTruck}
             onClose={handleModalClose}
+          />
+        )}
+
+        {/* Tire List Modal */}
+        {isTireModalOpen && selectedTruckInfo && (
+          <TireListModal
+            vehicleId={selectedTruckInfo.id}
+            vehicleName={selectedTruckInfo.name}
+            vehicleType="Truck"
+            tires={selectedTruckTires}
+            onClose={handleTireModalClose}
           />
         )}
       </div>

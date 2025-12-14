@@ -92,12 +92,22 @@ const TireFormModal = ({ tire, onClose }: TireFormModalProps) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: ['currentWearPercentage', 'installationKilometers', 'currentKilometers'].includes(name)
-        ? Number(value)
-        : value
-    }));
+    
+    // Reset vehicle selection when ownerType changes
+    if (name === 'ownerType') {
+      setFormData(prev => ({
+        ...prev,
+        ownerType: value as 'Truck' | 'Trailer',
+        vehicle: '' // Reset vehicle selection
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: ['currentWearPercentage', 'installationKilometers', 'currentKilometers'].includes(name)
+          ? Number(value)
+          : value
+      }));
+    }
   };
 
   const tirePositions = [

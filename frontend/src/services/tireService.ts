@@ -32,8 +32,8 @@ export const tireService = {
     return response.data;
   },
 
-  async getTiresByVehicle(vehicleId: string): Promise<PaginatedResponse<Tire>> {
-    const response = await api.get<PaginatedResponse<Tire>>(`/tires/vehicle/${vehicleId}`);
+  async getTiresByVehicle(vehicleId: string, ownerType: 'Truck' | 'Trailer' = 'Truck'): Promise<PaginatedResponse<Tire>> {
+    const response = await api.get<PaginatedResponse<Tire>>(`/tires/vehicle/${ownerType}/${vehicleId}`);
     return response.data;
   },
 

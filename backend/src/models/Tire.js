@@ -9,43 +9,25 @@ const tireSchema = new mongoose.Schema(
             trim: true,
             uppercase: true
         },
-        size: {
-            type: String,
-            required: [true, 'Size is required'],
-            trim: true
-        },
         brand: {
             type: String,
             required: [true, 'Brand is required'],
             trim: true
         },
-        purchaseDate: {
-            type: Date,
-            required: [true, 'Purchase date is required']
-        },
-        installationDate: {
-            type: Date
-        },
-        installationKilometers: {
-            type: Number,
-            default: 0,
-            min: [0, 'Installation kilometers cannot be negative']
-        },
-        currentKilometers: {
-            type: Number,
-            default: 0,
-            min: [0, 'Current kilometers cannot be negative']
-        },
-        wearPercentage: {
-            type: Number,
-            default: 0,
-            min: [0, 'Wear percentage cannot be negative'],
-            max: [100, 'Wear percentage cannot exceed 100']
-        },
-        status: {
+        model: {
             type: String,
-            enum: ['Good', 'Warning', 'NeedReplacement'],
-            default: 'Good'
+            required: [true, 'Model is required'],
+            trim: true
+        },
+        size: {
+            type: String,
+            required: [true, 'Size is required'],
+            trim: true
+        },
+        position: {
+            type: String,
+            required: [true, 'Position is required'],
+            trim: true
         },
         ownerType: {
             type: String,
@@ -56,6 +38,31 @@ const tireSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             refPath: 'ownerType',
             required: [true, 'Vehicle reference is required']
+        },
+        currentWearPercentage: {
+            type: Number,
+            default: 0,
+            min: [0, 'Wear percentage cannot be negative'],
+            max: [100, 'Wear percentage cannot exceed 100']
+        },
+        status: {
+            type: String,
+            enum: ['Good', 'Warning', 'NeedReplacement'],
+            default: 'Good'
+        },
+        purchaseDate: {
+            type: Date,
+            required: [true, 'Purchase date is required']
+        },
+        installationKilometers: {
+            type: Number,
+            default: 0,
+            min: [0, 'Installation kilometers cannot be negative']
+        },
+        currentKilometers: {
+            type: Number,
+            default: 0,
+            min: [0, 'Current kilometers cannot be negative']
         }
     },
     {
@@ -81,11 +88,11 @@ tireSchema.methods.updateWear = function (newKilometers) {
     this.currentKilometers = newKilometers;
     const usageKm = this.currentKilometers - this.installationKilometers;
 
-    this.wearPercentage = Math.min((usageKm / 50000) * 100, 100);
+    this.currentWearPercentage = Math.min((usageKm / 50000) * 100, 100);
 
-    if (this.wearPercentage >= 80) {
+    if (this.currentWearPercentage >= 80) {
         this.status = 'NeedReplacement';
-    } else if (this.wearPercentage >= 60) {
+    } else if (this.currentWearPercentage >= 60) {
         this.status = 'Warning';
     } else {
         this.status = 'Good';

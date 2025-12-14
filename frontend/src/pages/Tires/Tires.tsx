@@ -236,6 +236,14 @@ const Tires = () => {
                       <span className="font-semibold">{tire.ownerType === 'Truck' ? 'Camion' : 'Remorque'}</span>
                     </div>
                     <div className="flex justify-between items-center">
+                      <span className="text-gray-600 text-sm">Véhicule:</span>
+                      <span className="font-semibold text-blue-600">
+                        {typeof tire.vehicle === 'object' && tire.vehicle !== null 
+                          ? tire.vehicle.registrationNumber 
+                          : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600 text-sm">Usure:</span>
                       <span className={`font-semibold ${getWearColor(tire.currentWearPercentage)}`}>
                         {tire.currentWearPercentage}%

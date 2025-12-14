@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Plus, TruckIcon, Edit2, Trash2, Search } from 'lucide-react';
+import { Plus, TruckIcon, Edit2, Trash2, Search, CircleDot } from 'lucide-react';
 import { trailerService } from '../../services/trailerService';
-import type { Trailer } from '../../types';
+import { tireService } from '../../services/tireService';
+import type { Trailer, Tire } from '../../types';
 import { toast } from 'react-hot-toast';
 import { MainLayout } from '../../layouts/MainLayout';
 import TrailerFormModal from '../../components/trailers/TrailerFormModal';
+import TireListModal from '../../components/trucks/TireListModal';
 
 const Trailers = () => {
   const [trailers, setTrailers] = useState<Trailer[]>([]);
@@ -14,6 +16,10 @@ const Trailers = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrailer, setSelectedTrailer] = useState<Trailer | null>(null);
+  const [isTireModalOpen, setIsTireModalOpen] = useState(false);
+  const [selectedTrailerTires, setSelectedTrailerTires] = useState<Tire[]>([]);
+  const [selectedTrailerInfo, setSelectedTrailerInfo] = useState<{id: string, name: string} | null>(null);
+  const [trailerTires, setTrailerTires] = useState<Record<string, Tire[]>>({});
 
   useEffect(() => {
     fetchTrailers();
@@ -27,7 +33,22 @@ const Trailers = () => {
       if (typeFilter !== 'all') params.type = typeFilter;
       
       const response = await trailerService.getAllTrailers(params);
-      setTrailers(response.data || []);
+      const trailersData = response.data || [];
+      setTrailers(trailersData);
+      
+      // Fetch tires for each trailer
+      const tiresMap: Record<string, Tire[]> = {};
+      await Promise.all(
+        trailersData.map(async (trailer) => {
+          try {
+            const tiresResponse = await tireService.getTiresByVehicle(trailer._id, 'Trailer');
+            tiresMap[trailer._id] = tiresResponse.data || [];
+          } catch (error) {
+            tiresMap[trailer._id] = [];
+          }
+        })
+      );
+      setTrailerTires(tiresMap);
     } catch (error) {
       toast.error('Erreur lors du chargement des remorques');
       console.error('Error fetching trailers:', error);
@@ -63,6 +84,24 @@ const Trailers = () => {
     setIsModalOpen(false);
     setSelectedTrailer(null);
     fetchTrailers();
+  };
+
+  const handleViewTires = async (trailer: Trailer) => {
+    try {
+      const response = await tireService.getTiresByVehicle(trailer._id);
+      setSelectedTrailerTires(response.data || []);
+      setSelectedTrailerInfo({ id: trailer._id, name: trailer.registrationNumber });
+      setIsTireModalOpen(true);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des pneus');
+      console.error('Error fetching tires:', error);
+    }
+  };
+
+  const handleTireModalClose = () => {
+    setIsTireModalOpen(false);
+    setSelectedTrailerTires([]);
+    setSelectedTrailerInfo(null);
   };
 
   const filteredTrailers = trailers.filter(trailer => {
@@ -256,12 +295,50 @@ const Trailers = () => {
                     </div>
                   </div>
 
+                  {/* Tires Section */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <CircleDot className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-semibold text-gray-700">
+                          Pneus ({trailerTires[trailer._id]?.length || 0})
+                        </span>
+                      </div>
+                    </div>
+                    {trailerTires[trailer._id]?.length > 0 ? (
+                      <div className="space-y-1">
+                        {trailerTires[trailer._id].slice(0, 3).map((tire) => (
+                          <div key={tire._id} className="flex items-center justify-between text-xs">
+                            <span className="text-gray-600">{tire.serialNumber}</span>
+                            <span className="text-gray-500">{tire.position}</span>
+                          </div>
+                        ))}
+                        {trailerTires[trailer._id].length > 3 && (
+                          <div className="text-xs text-blue-600 font-medium">
+                            +{trailerTires[trailer._id].length - 3} autres...
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400">Aucun pneu assigné</p>
+                    )}
+                  </div>
+
                   <div className="flex items-center justify-between mb-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(trailer.status)}`}>
                       {trailer.status}
                     </span>
                   </div>
 
+                  <div className="flex gap-2 mb-2">
+                    <button
+                      onClick={() => handleViewTires(trailer)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <CircleDot className="w-4 h-4" />
+                      Pneus
+                    </button>
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEditTrailer(trailer)}
@@ -288,6 +365,17 @@ const Trailers = () => {
           <TrailerFormModal
             trailer={selectedTrailer}
             onClose={handleModalClose}
+          />
+        )}
+
+        {/* Tire List Modal */}
+        {isTireModalOpen && selectedTrailerInfo && (
+          <TireListModal
+            vehicleId={selectedTrailerInfo.id}
+            vehicleName={selectedTrailerInfo.name}
+            vehicleType="Trailer"
+            tires={selectedTrailerTires}
+            onClose={handleTireModalClose}
           />
         )}
       </div>

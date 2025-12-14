@@ -63,7 +63,7 @@ export interface Tire {
   size: string;
   position: string;
   ownerType: 'Truck' | 'Trailer';
-  vehicle: string;
+  vehicle: string | Truck | Trailer;
   currentWearPercentage: number;
   status: 'Good' | 'Warning' | 'NeedReplacement';
   purchaseDate: string;
