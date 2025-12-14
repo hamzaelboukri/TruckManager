@@ -14,6 +14,7 @@ import { DriverRoutes } from './pages/DriverRoutes/DriverRoutes';
 import Trucks from './pages/Trucks/Trucks';
 import Trailers from './pages/Trailers/Trailers';
 import Tires from './pages/Tires/Tires';
+import Maintenance from './pages/Maintenance/Maintenance';
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
               <Route path="/tires" element={<Tires />} />
               <Route path="/routes" element={<Routes />} />
               <Route path="/driver-routes" element={<DriverRoutes />} />
-              <Route path="/maintenance" element={<Dashboard />} />
+              <Route path="/maintenance" element={<Maintenance />} />
             </Route>
           </RouterRoutes>
           <Toaster position="top-right" />
