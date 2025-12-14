@@ -4,7 +4,6 @@ import {
   getRouteById,
   createRoute,
   updateRoute,
-  updateRouteProgress,
   deleteRoute,
   startRoute,
   completeRoute,
@@ -40,8 +39,5 @@ router.delete('/:id', authMiddleware, isAdmin, deleteRoute);
 // Route lifecycle: Start and Complete (Admin or assigned Driver)
 router.patch('/:id/start', authMiddleware, startRoute);
 router.patch('/:id/complete', authMiddleware, completeRoute);
-
-// Driver can update route progress (kilometers, fuel)
-router.patch('/:id/progress', authMiddleware, updateRouteProgress);
 
 export default router;

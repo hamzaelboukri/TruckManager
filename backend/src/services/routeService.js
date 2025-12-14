@@ -14,12 +14,19 @@ class RouteService {
     }
 
     const route = await Route.create(routeData);
-    return await route.populate('driver truck');
+    return await route.populate({
+      path: 'driver',
+      populate: { path: 'user' }
+    }).populate('truck');
   }
 
   async getRouteById(routeId) {
     const route = await Route.findById(routeId)
-      .populate('driver truck');
+      .populate({
+        path: 'driver',
+        populate: { path: 'user' }
+      })
+      .populate('truck');
 
     if (!route) {
       throw new Error('Route not found');
@@ -32,7 +39,11 @@ class RouteService {
     const skip = (page - 1) * limit;
 
     const routes = await Route.find(filters)
-      .populate('driver truck')
+      .populate({
+        path: 'driver',
+        populate: { path: 'user' }
+      })
+      .populate('truck')
       .sort(sort)
       .skip(skip)
       .limit(limit);

@@ -83,40 +83,92 @@ export const updateRoute = async (req, res) => {
   }
 };
 
-// Update route progress (Driver can update own route progress)
-export const updateRouteProgress = async (req, res) => {
+// Start route (Driver only)
+export const startRoute = async (req, res) => {
   try {
     const route = await routeService.getRouteById(req.params.id);
 
     // Check if driver owns this route
-    if (req.user.role === 'Driver' && route.driver._id.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You can only update your own routes'
-      });
+    if (req.user.role === 'Driver') {
+      const Driver = (await import('../models/Driver.js')).default;
+      const driver = await Driver.findOne({ user: req.user.userId });
+      
+      if (!driver) {
+        return res.status(404).json({
+          success: false,
+          message: 'Driver profile not found'
+        });
+      }
+      
+      if (route.driver._id.toString() !== driver._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only start your own routes'
+        });
+      }
     }
 
-    const { departureKilometers, arrivalKilometers, fuelVolume, fuelCost, vehicleRemarks } = req.body;
-
-    // Build update object with only provided fields
-    const updateData = {};
-    if (departureKilometers !== undefined) updateData.departureKilometers = departureKilometers;
-    if (arrivalKilometers !== undefined) updateData.arrivalKilometers = arrivalKilometers;
-    if (fuelVolume !== undefined) updateData.fuelVolume = fuelVolume;
-    if (fuelCost !== undefined) updateData.fuelCost = fuelCost;
-    if (vehicleRemarks !== undefined) updateData.vehicleRemarks = vehicleRemarks;
-
-    const updatedRoute = await routeService.updateRoute(req.params.id, updateData);
+    const { departureKilometers } = req.body;
+    const updatedRoute = await routeService.startRoute(req.params.id, departureKilometers);
 
     res.status(200).json({
       success: true,
-      message: 'Route progress updated successfully',
+      message: 'Route started successfully',
       data: updatedRoute
     });
   } catch (error) {
+    console.error('Error starting route:', error);
     res.status(400).json({
       success: false,
-      message: 'Error updating route progress',
+      message: 'Error starting route',
+      error: error.message
+    });
+  }
+};
+
+// Complete route (Driver only)
+export const completeRoute = async (req, res) => {
+  try {
+    const route = await routeService.getRouteById(req.params.id);
+
+    // Check if driver owns this route
+    if (req.user.role === 'Driver') {
+      const Driver = (await import('../models/Driver.js')).default;
+      const driver = await Driver.findOne({ user: req.user.userId });
+      
+      if (!driver) {
+        return res.status(404).json({
+          success: false,
+          message: 'Driver profile not found'
+        });
+      }
+      
+      if (route.driver._id.toString() !== driver._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only complete your own routes'
+        });
+      }
+    }
+
+    const { arrivalKilometers, fuelVolume, fuelCost, vehicleRemarks } = req.body;
+    const updatedRoute = await routeService.completeRoute(req.params.id, {
+      arrivalKilometers,
+      fuelVolume,
+      fuelCost,
+      vehicleRemarks
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Route completed successfully',
+      data: updatedRoute
+    });
+  } catch (error) {
+    console.error('Error completing route:', error);
+    res.status(400).json({
+      success: false,
+      message: 'Error completing route',
       error: error.message
     });
   }
@@ -132,65 +184,6 @@ export const deleteRoute = async (req, res) => {
     });
   } catch (error) {
     res.status(404).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// Start route (Admin or assigned Driver)
-export const startRoute = async (req, res) => {
-  try {
-    const { departureKilometers } = req.body;
-
-    if (!departureKilometers || departureKilometers < 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid departure kilometers are required'
-      });
-    }
-
-    const route = await routeService.startRoute(req.params.id, departureKilometers);
-
-    res.status(200).json({
-      success: true,
-      message: 'Route started successfully',
-      data: route
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// Complete route (Admin or assigned Driver)
-export const completeRoute = async (req, res) => {
-  try {
-    const { arrivalKilometers, fuelVolume, fuelCost, vehicleRemarks } = req.body;
-
-    if (!arrivalKilometers || arrivalKilometers <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid arrival kilometers are required'
-      });
-    }
-
-    const route = await routeService.completeRoute(req.params.id, {
-      arrivalKilometers,
-      fuelVolume,
-      fuelCost,
-      vehicleRemarks
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Route completed successfully. Truck, trailer, and tires updated.',
-      data: route
-    });
-  } catch (error) {
-    res.status(400).json({
       success: false,
       message: error.message
     });

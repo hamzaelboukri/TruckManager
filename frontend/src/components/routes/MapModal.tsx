@@ -203,7 +203,6 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
           // Get all drivers with populated user data
           const driversResponse = await api.get('/drivers');
           const allDrivers = driversResponse.data.data || [];
-          console.log('All drivers from backend:', allDrivers);
           
           // Filter drivers by user name or email
           const searchLower = driverSearch.toLowerCase();
@@ -220,7 +219,6 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
               driverId: driver._id
             }));
           
-          console.log('Filtered drivers:', filtered);
           setDrivers(filtered);
           setShowDriverDropdown(filtered.length > 0);
         } catch (error) {
@@ -373,15 +371,16 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
                 <div className="relative">
                   <input
                     type="text"
-                    value={truckSearch || formData.truck}
+                    value={initialData ? formData.truck : (truckSearch || formData.truck)}
                     onChange={(e) => {
-                      setTruckSearch(e.target.value);
-                      setFormData({ ...formData, truck: e.target.value });
+                      if (!initialData) {
+                        setTruckSearch(e.target.value);
+                      }
                     }}
-                    onFocus={() => truckSearch.length >= 2 && setShowTruckDropdown(true)}
                     placeholder="Rechercher un camion..."
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
+                    readOnly={!!initialData}
                   />
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                 </div>
@@ -421,15 +420,16 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
                 <div className="relative">
                   <input
                     type="text"
-                    value={driverSearch || formData.driver}
+                    value={initialData ? formData.driver : (driverSearch || formData.driver)}
                     onChange={(e) => {
-                      setDriverSearch(e.target.value);
-                      setFormData({ ...formData, driver: e.target.value });
+                      if (!initialData) {
+                        setDriverSearch(e.target.value);
+                      }
                     }}
-                    onFocus={() => driverSearch.length >= 2 && setShowDriverDropdown(true)}
                     placeholder="Rechercher un chauffeur..."
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
+                    readOnly={!!initialData}
                   />
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                 </div>

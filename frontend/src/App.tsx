@@ -9,7 +9,9 @@ import { Home } from './pages/Home/Home';
 import { Login } from './pages/Auth/Login';
 import { Register } from './pages/Auth/Register';
 import { Dashboard } from './pages/Dashboard/Dashboard';
+import { DriverDashboard } from './pages/Dashboard/DriverDashboard';
 import { Routes } from './pages/Routes/Routes';
+import { DriverRoutes } from './pages/DriverRoutes/DriverRoutes';
 
 function App() {
   return (
@@ -23,9 +25,11 @@ function App() {
             
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/driver-dashboard" element={<DriverDashboard />} />
               <Route path="/trucks" element={<Dashboard />} />
               <Route path="/trailers" element={<Dashboard />} />
               <Route path="/routes" element={<Routes />} />
+              <Route path="/driver-routes" element={<DriverRoutes />} />
               <Route path="/maintenance" element={<Dashboard />} />
             </Route>
           </RouterRoutes>

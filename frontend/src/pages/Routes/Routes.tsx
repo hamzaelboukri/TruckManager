@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../../layouts/MainLayout';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Plus,
   MapPin,
@@ -31,6 +33,8 @@ interface RouteData {
   estimatedDuration: string;
   fuelConsumption?: number;
   fuelVolume?: number;
+  departureKilometers?: number;
+  arrivalKilometers?: number;
   truck: string | any;
   driver: string | any;
   status: 'Planned' | 'InProgress' | 'Completed' | 'Cancelled';
@@ -40,6 +44,8 @@ interface RouteData {
 }
 
 export const Routes: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<RouteData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,6 +59,13 @@ export const Routes: React.FC = () => {
     totalDistance: 0,
     totalFuel: 0
   });
+
+  // Redirect drivers to their own route page
+  useEffect(() => {
+    if (user?.role === 'Driver') {
+      navigate('/driver-routes');
+    }
+  }, [user, navigate]);
 
   // Fetch routes from backend
   useEffect(() => {
@@ -321,7 +334,7 @@ export const Routes: React.FC = () => {
                 : `${route.truck?.brand || ''} ${route.truck?.model || ''} - ${route.truck?.registrationNumber || ''}`.trim();
               const driverName = typeof route.driver === 'string'
                 ? route.driver
-                : route.driver?.name || 'Non assigné';
+                : route.driver?.user?.name || route.driver?.name || 'Non assigné';
               
               return (
                 <div
@@ -379,8 +392,22 @@ export const Routes: React.FC = () => {
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="w-4 h-4 text-purple-600" />
-                          <span className="font-semibold text-gray-900">{route.distance} km</span>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-900">{route.distance.toFixed(0)} km</span>
+                            <span className="text-xs text-gray-500">Estimée</span>
+                          </div>
                         </div>
+                        {route.departureKilometers && route.arrivalKilometers && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Navigation className="w-4 h-4 text-green-600" />
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-green-700">
+                                {(route.arrivalKilometers - route.departureKilometers).toFixed(0)} km
+                              </span>
+                              <span className="text-xs text-gray-500">Réelle</span>
+                            </div>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 text-sm">
                           <Fuel className="w-4 h-4 text-orange-600" />
                           <span className="font-semibold text-gray-900">{route.fuelVolume || route.fuelConsumption || 0} L</span>

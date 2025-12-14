@@ -29,15 +29,27 @@ const routeSchema = new mongoose.Schema(
             required: [true, 'Departure location is required'],
             trim: true
         },
+        departureCoords: {
+            lat: { type: Number, required: false },
+            lng: { type: Number, required: false }
+        },
         arrivalLocation: {
             type: String,
             required: [true, 'Arrival location is required'],
             trim: true
         },
+        arrivalCoords: {
+            lat: { type: Number, required: false },
+            lng: { type: Number, required: false }
+        },
         distance: {
             type: Number,
             required: [true, 'Distance is required'],
             min: [0, 'Distance must be positive']
+        },
+        date: {
+            type: Date,
+            default: Date.now
         },
         departureKilometers: {
             type: Number,
