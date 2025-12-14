@@ -57,23 +57,50 @@ const MapClickHandler: React.FC<{
 };
 
 export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, initialData }) => {
-  const [selectingPoint, setSelectingPoint] = useState<'departure' | 'arrival' | null>('departure');
+  const [selectingPoint, setSelectingPoint] = useState<'departure' | 'arrival' | null>(initialData ? null : 'departure');
   const [departure, setDeparture] = useState<LocationData | null>(
     initialData?.departureCoords 
-      ? { ...initialData.departureCoords, name: initialData.departure }
+      ? { ...initialData.departureCoords, name: initialData.departureLocation || initialData.departure }
+      : initialData?.departureLocation 
+      ? { lat: 46.603354, lng: 1.888334, name: initialData.departureLocation }
       : null
   );
   const [arrival, setArrival] = useState<LocationData | null>(
     initialData?.arrivalCoords 
-      ? { ...initialData.arrivalCoords, name: initialData.arrival }
+      ? { ...initialData.arrivalCoords, name: initialData.arrivalLocation || initialData.arrival }
+      : initialData?.arrivalLocation
+      ? { lat: 46.603354, lng: 2.888334, name: initialData.arrivalLocation }
       : null
   );
   
+  // Extract truck and driver info from objects if they exist
+  const getTruckInfo = () => {
+    if (!initialData?.truck) return { id: '', name: '' };
+    if (typeof initialData.truck === 'string') return { id: initialData.truck, name: '' };
+    return {
+      id: initialData.truck._id || initialData.truck.id || '',
+      name: `${initialData.truck.brand || ''} ${initialData.truck.model || ''} - ${initialData.truck.registrationNumber || ''}`.trim()
+    };
+  };
+  
+  const getDriverInfo = () => {
+    if (!initialData?.driver) return { id: '', name: '' };
+    if (typeof initialData.driver === 'string') return { id: initialData.driver, name: '' };
+    const user = initialData.driver.user || {};
+    return {
+      id: initialData.driver._id || initialData.driver.id || '',
+      name: user.name || user.email || ''
+    };
+  };
+  
+  const truckInfo = getTruckInfo();
+  const driverInfo = getDriverInfo();
+  
   const [formData, setFormData] = useState({
-    truck: initialData?.truck || '',
-    truckId: initialData?.truckId || '',
-    driver: initialData?.driver || '',
-    driverId: initialData?.driverId || '',
+    truck: truckInfo.name,
+    truckId: truckInfo.id,
+    driver: driverInfo.name,
+    driverId: driverInfo.id,
     date: initialData?.date || new Date().toISOString().split('T')[0],
     description: initialData?.description || '',
   });
@@ -176,6 +203,7 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
           // Get all drivers with populated user data
           const driversResponse = await api.get('/drivers');
           const allDrivers = driversResponse.data.data || [];
+          console.log('All drivers from backend:', allDrivers);
           
           // Filter drivers by user name or email
           const searchLower = driverSearch.toLowerCase();
@@ -192,6 +220,7 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
               driverId: driver._id
             }));
           
+          console.log('Filtered drivers:', filtered);
           setDrivers(filtered);
           setShowDriverDropdown(filtered.length > 0);
         } catch (error) {

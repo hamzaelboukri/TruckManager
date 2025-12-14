@@ -69,7 +69,7 @@ export const Routes: React.FC = () => {
         ...(filterStatus !== 'all' && { status: filterStatus })
       });
       
-      setRoutes(response.routes || []);
+      setRoutes(response.data || []);
     } catch (error: any) {
       console.error('Error fetching routes:', error);
       toast.error('Erreur lors du chargement des routes');
@@ -82,11 +82,11 @@ export const Routes: React.FC = () => {
     try {
       const statistics = await routeService.getRouteStatistics();
       setStats({
-        total: statistics.total,
-        inProgress: statistics.byStatus.InProgress || 0,
-        completed: statistics.byStatus.Completed || 0,
-        totalDistance: statistics.totalDistance,
-        totalFuel: statistics.totalFuel
+        total: statistics.total || 0,
+        inProgress: statistics.byStatus?.InProgress || 0,
+        completed: statistics.byStatus?.Completed || 0,
+        totalDistance: statistics.totalDistance || 0,
+        totalFuel: statistics.totalFuel || 0
       });
     } catch (error) {
       console.error('Error fetching statistics:', error);
