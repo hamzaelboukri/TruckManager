@@ -12,6 +12,8 @@ import { Dashboard } from './pages/Dashboard/Dashboard';
 import { DriverDashboard } from './pages/Dashboard/DriverDashboard';
 import { Routes } from './pages/Routes/Routes';
 import { DriverRoutes } from './pages/DriverRoutes/DriverRoutes';
+import Trucks from './pages/Trucks/Trucks';
+import Trailers from './pages/Trailers/Trailers';
 
 function App() {
   return (
@@ -26,8 +28,8 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/driver-dashboard" element={<DriverDashboard />} />
-              <Route path="/trucks" element={<Dashboard />} />
-              <Route path="/trailers" element={<Dashboard />} />
+              <Route path="/trucks" element={<Trucks />} />
+              <Route path="/trailers" element={<Trailers />} />
               <Route path="/routes" element={<Routes />} />
               <Route path="/driver-routes" element={<DriverRoutes />} />
               <Route path="/maintenance" element={<Dashboard />} />
