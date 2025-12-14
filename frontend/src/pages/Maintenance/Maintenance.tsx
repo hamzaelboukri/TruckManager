@@ -15,21 +15,27 @@ const Maintenance = () => {
   const [vehicleTypeFilter, setVehicleTypeFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<MaintenanceRecord | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const itemsPerPage = 15;
 
   useEffect(() => {
     fetchRecords();
-  }, [statusFilter, priorityFilter, vehicleTypeFilter]);
+  }, [statusFilter, priorityFilter, vehicleTypeFilter, currentPage]);
 
   const fetchRecords = async () => {
     try {
       setLoading(true);
-      const params: any = { limit: 100 };
+      const params: any = { limit: itemsPerPage, page: currentPage };
       if (statusFilter !== 'all') params.status = statusFilter;
       if (priorityFilter !== 'all') params.priority = priorityFilter;
       if (vehicleTypeFilter !== 'all') params.vehicleType = vehicleTypeFilter;
       
       const response = await maintenanceService.getAllRecords(params);
       setRecords(response.records || response.data || []);
+      setTotalPages(response.pagination?.pages || 1);
+      setTotalRecords(response.pagination?.total || 0);
     } catch (error) {
       toast.error('Erreur lors du chargement des maintenances');
       console.error('Error fetching maintenance records:', error);
@@ -329,6 +335,29 @@ const Maintenance = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Précédent
+            </button>
+            <span className="px-4 py-2">
+              Page {currentPage} sur {totalPages} ({totalRecords} maintenances)
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Suivant
+            </button>
           </div>
         )}
 

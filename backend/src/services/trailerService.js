@@ -21,7 +21,7 @@ class TrailerService {
         const total = await Trailer.countDocuments(query);
 
         return {
-            trailers,
+            data: trailers,
             pagination: {
                 total,
                 page: Number(page),
@@ -158,7 +158,7 @@ class TrailerService {
         const total = await Trailer.countDocuments(query);
 
         return {
-            trailers,
+            data: trailers,
             pagination: {
                 total,
                 page: Number(page),

@@ -19,18 +19,25 @@ const Trucks = () => {
   const [selectedTruckTires, setSelectedTruckTires] = useState<Tire[]>([]);
   const [selectedTruckInfo, setSelectedTruckInfo] = useState<{id: string, name: string} | null>(null);
   const [truckTires, setTruckTires] = useState<Record<string, Tire[]>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTrucks, setTotalTrucks] = useState(0);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchTrucks();
-  }, [statusFilter]);
+  }, [statusFilter, currentPage]);
 
   const fetchTrucks = async () => {
     try {
       setLoading(true);
-      const params = statusFilter !== 'all' ? { status: statusFilter, limit: 100 } : { limit: 100 };
+      const params: any = { limit: itemsPerPage, page: currentPage };
+      if (statusFilter !== 'all') params.status = statusFilter;
       const response = await truckService.getAllTrucks(params);
       const trucksData = response.data || [];
       setTrucks(trucksData);
+      setTotalPages(response.pages || 1);
+      setTotalTrucks(response.total || 0);
       
       // Fetch tires for each truck
       const tiresMap: Record<string, Tire[]> = {};
@@ -322,6 +329,29 @@ const Trucks = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Précédent
+            </button>
+            <span className="px-4 py-2">
+              Page {currentPage} sur {totalPages} ({totalTrucks} camions)
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Suivant
+            </button>
           </div>
         )}
 

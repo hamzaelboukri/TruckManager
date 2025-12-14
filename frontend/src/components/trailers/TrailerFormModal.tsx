@@ -34,16 +34,16 @@ const TrailerFormModal = ({ trailer, onClose }: TrailerFormModalProps) => {
     if (trailer) {
       setFormData({
         registrationNumber: trailer.registrationNumber,
-        brand: trailer.brand,
-        model: trailer.model,
+        brand: trailer.brand || '',
+        model: trailer.model || '',
         type: trailer.type,
         year: trailer.year,
         maxCapacity: trailer.maxCapacity,
         currentKilometers: trailer.currentKilometers,
-        dimensions: trailer.dimensions,
-        numberOfAxles: trailer.numberOfAxles,
+        dimensions: trailer.dimensions || { length: 0, width: 0, height: 0 },
+        numberOfAxles: trailer.numberOfAxles || 2,
         status: trailer.status,
-        condition: trailer.condition,
+        condition: trailer.condition || 'Good',
       });
     }
   }, [trailer]);

@@ -20,21 +20,29 @@ const Trailers = () => {
   const [selectedTrailerTires, setSelectedTrailerTires] = useState<Tire[]>([]);
   const [selectedTrailerInfo, setSelectedTrailerInfo] = useState<{id: string, name: string} | null>(null);
   const [trailerTires, setTrailerTires] = useState<Record<string, Tire[]>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTrailers, setTotalTrailers] = useState(0);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchTrailers();
-  }, [statusFilter, typeFilter]);
+  }, [statusFilter, typeFilter, currentPage]);
 
   const fetchTrailers = async () => {
     try {
       setLoading(true);
-      const params: any = { limit: 100 };
+      const params: any = { limit: itemsPerPage, page: currentPage };
       if (statusFilter !== 'all') params.status = statusFilter;
       if (typeFilter !== 'all') params.type = typeFilter;
       
       const response = await trailerService.getAllTrailers(params);
       const trailersData = response.data || [];
       setTrailers(trailersData);
+      setTotalPages(response.pagination?.pages || 1);
+      setTotalTrailers(response.pagination?.total || 0);
+      setTotalPages(response.pagination?.pages || 1);
+      setTotalTrailers(response.pagination?.total || 0);
       
       // Fetch tires for each trailer
       const tiresMap: Record<string, Tire[]> = {};
@@ -284,13 +292,15 @@ const Trailers = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600 text-sm">Dimensions:</span>
                       <span className="font-semibold">
-                        {trailer.dimensions.length}×{trailer.dimensions.width}×{trailer.dimensions.height}m
+                        {trailer.dimensions?.length && trailer.dimensions?.width && trailer.dimensions?.height
+                          ? `${trailer.dimensions.length}×${trailer.dimensions.width}×${trailer.dimensions.height}m`
+                          : 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600 text-sm">Condition:</span>
-                      <span className={`font-semibold ${getConditionColor(trailer.condition)}`}>
-                        {trailer.condition}
+                      <span className={`font-semibold ${getConditionColor(trailer.condition || 'Good')}`}>
+                        {trailer.condition || 'Good'}
                       </span>
                     </div>
                   </div>
@@ -357,6 +367,29 @@ const Trailers = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Précédent
+            </button>
+            <span className="px-4 py-2">
+              Page {currentPage} sur {totalPages} ({totalTrailers} remorques)
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Suivant
+            </button>
           </div>
         )}
 

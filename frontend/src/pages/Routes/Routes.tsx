@@ -52,6 +52,10 @@ export const Routes: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [routes, setRoutes] = useState<RouteData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRoutes, setTotalRoutes] = useState(0);
+  const itemsPerPage = 12;
   const [stats, setStats] = useState({
     total: 0,
     inProgress: 0,
@@ -71,18 +75,21 @@ export const Routes: React.FC = () => {
   useEffect(() => {
     fetchRoutes();
     fetchStatistics();
-  }, [filterStatus]);
+  }, [filterStatus, currentPage]);
 
   const fetchRoutes = async () => {
     try {
       setLoading(true);
       const response = await routeService.getAllRoutes({
-        limit: 100,
+        limit: itemsPerPage,
+        page: currentPage,
         sort: '-createdAt',
         ...(filterStatus !== 'all' && { status: filterStatus })
       });
       
       setRoutes(response.data || []);
+      setTotalPages(response.pagination?.pages || 1);
+      setTotalRoutes(response.pagination?.total || 0);
     } catch (error: any) {
       console.error('Error fetching routes:', error);
       toast.error('Erreur lors du chargement des routes');
@@ -467,6 +474,29 @@ export const Routes: React.FC = () => {
           })
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center items-center gap-4">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              Précédent
+            </button>
+            <span className="text-gray-700 dark:text-gray-300">
+              Page {currentPage} sur {totalPages} ({totalRoutes} routes)
+            </span>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              Suivant
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Map Modal */}

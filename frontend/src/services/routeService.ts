@@ -119,7 +119,7 @@ class RouteService {
   // Get route statistics
   async getRouteStatistics(): Promise<RouteStatistics> {
     const response = await api.get('/routes/statistics');
-    return response.data;
+    return response.data.data || response.data;
   }
 }
 
