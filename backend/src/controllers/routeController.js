@@ -4,26 +4,25 @@ export const getAllRoutes = async (req, res) => {
   try {
     const { page = 1, limit = 10, sort = '-createdAt', status, driver, truck } = req.query;
 
-    const filters = {};
-    if (status) filters.status = status;
-    if (driver) filters.driver = driver;
-    if (truck) filters.truck = truck;
+    const options = { 
+      page: parseInt(page), 
+      limit: parseInt(limit), 
+      sort 
+    };
+    
+    if (status) options.status = status;
+    if (driver) options.driver = driver;
+    if (truck) options.truck = truck;
 
-    const options = { page: parseInt(page), limit: parseInt(limit), sort };
-
-    const result = await routeService.getAllRoutes(filters, options);
+    const result = await routeService.getAllRoutes(options);
 
     res.status(200).json({
       success: true,
       data: result.routes,
-      pagination: {
-        page: result.page,
-        limit: parseInt(limit),
-        total: result.total,
-        pages: result.pages
-      }
+      pagination: result.pagination
     });
   } catch (error) {
+    console.error('Error in getAllRoutes:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching routes',

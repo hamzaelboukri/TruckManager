@@ -2,14 +2,13 @@ import { X, CircleDot } from 'lucide-react';
 import type { Tire } from '../../types';
 
 interface TireListModalProps {
-  vehicleId: string;
   vehicleName: string;
   vehicleType: 'Truck' | 'Trailer';
   tires: Tire[];
   onClose: () => void;
 }
 
-const TireListModal = ({ vehicleId, vehicleName, vehicleType, tires, onClose }: TireListModalProps) => {
+const TireListModal = ({ vehicleName, vehicleType, tires, onClose }: TireListModalProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Good': return 'bg-green-100 text-green-800';

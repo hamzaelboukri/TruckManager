@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { MainLayout } from '../../layouts/MainLayout';
+import { DriverLayout } from '../../layouts/DriverLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { MapPin, Calendar, Truck, Navigation, Package, Play, CheckCircle } from 'lucide-react';
+import { MapPin, Calendar, Truck, Navigation, Package, Play, CheckCircle, Download } from 'lucide-react';
 import { api } from '../../services/api';
 import toast from 'react-hot-toast';
 import { RouteProgressModal } from '../../components/routes/RouteProgressModal';
+import { generateRoutePDF } from '../../utils/pdfGenerator';
 
 export const DriverRoutes: React.FC = () => {
   const { user } = useAuth();
@@ -13,6 +14,17 @@ export const DriverRoutes: React.FC = () => {
   const [filter, setFilter] = useState<string>('all');
   const [selectedRoute, setSelectedRoute] = useState<any>(null);
   const [showProgressModal, setShowProgressModal] = useState(false);
+
+  const handleDownloadPDF = (route: any) => {
+    try {
+      const driverName = user?.name || 'Chauffeur';
+      generateRoutePDF(route, driverName);
+      toast.success('PDF téléchargé avec succès!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Erreur lors de la génération du PDF');
+    }
+  };
 
   useEffect(() => {
     const fetchDriverRoutes = async () => {
@@ -79,16 +91,16 @@ export const DriverRoutes: React.FC = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <DriverLayout>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </MainLayout>
+      </DriverLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <DriverLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mes Routes</h1>
@@ -266,6 +278,15 @@ export const DriverRoutes: React.FC = () => {
                       })}
                     </div>
 
+                    {/* Download PDF Button */}
+                    <button
+                      onClick={() => handleDownloadPDF(route)}
+                      className="w-full mt-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Download className="w-4 h-4" />
+                      PDF
+                    </button>
+
                     {/* Action Button */}
                     {route.status === 'Planned' && (
                       <button
@@ -338,6 +359,6 @@ export const DriverRoutes: React.FC = () => {
           fetchDriverRoutes();
         }}
       />
-    </MainLayout>
+    </DriverLayout>
   );
 };

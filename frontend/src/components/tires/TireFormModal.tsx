@@ -39,7 +39,7 @@ const TireFormModal = ({ tire, onClose }: TireFormModalProps) => {
         size: tire.size,
         position: tire.position,
         ownerType: tire.ownerType,
-        vehicle: tire.vehicle,
+        vehicle: typeof tire.vehicle === 'string' ? tire.vehicle : tire.vehicle._id,
         currentWearPercentage: tire.currentWearPercentage,
         status: tire.status,
         purchaseDate: tire.purchaseDate 

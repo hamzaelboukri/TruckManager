@@ -12,6 +12,11 @@ const routeSchema = new mongoose.Schema(
             ref: 'Truck',
             required: [true, 'Truck is required']
         },
+        trailer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Trailer',
+            required: false
+        },
         description: {
             type: String,
             required: [true, 'Description is required'],

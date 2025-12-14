@@ -89,7 +89,7 @@ const Trucks = () => {
   };
 
   const handleTireModalClose = () => {
-    setIsTireModalClose(false);
+    setIsTireModalOpen(false);
     setSelectedTruckTires([]);
     setSelectedTruckInfo(null);
   };
@@ -336,7 +336,6 @@ const Trucks = () => {
         {/* Tire List Modal */}
         {isTireModalOpen && selectedTruckInfo && (
           <TireListModal
-            vehicleId={selectedTruckInfo.id}
             vehicleName={selectedTruckInfo.name}
             vehicleType="Truck"
             tires={selectedTruckTires}

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { MainLayout } from '../../layouts/MainLayout';
+import { DriverLayout } from '../../layouts/DriverLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { Truck, MapPin, Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Truck, MapPin, Calendar, CheckCircle, Clock, AlertCircle, Download } from 'lucide-react';
 import { api } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import type { Route } from '../../types';
+import { generateRoutePDF } from '../../utils/pdfGenerator';
 
 interface Statistics {
   totalRoutes: number;
@@ -29,6 +30,17 @@ export const DriverDashboard = () => {
   useEffect(() => {
     fetchDriverData();
   }, []);
+
+  const handleDownloadPDF = (route: Route) => {
+    try {
+      const driverName = user?.name || 'Chauffeur';
+      generateRoutePDF(route, driverName);
+      toast.success('PDF téléchargé avec succès!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Erreur lors de la génération du PDF');
+    }
+  };
 
   const fetchDriverData = async () => {
     try {
@@ -116,20 +128,20 @@ export const DriverDashboard = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <DriverLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading dashboard...</p>
           </div>
         </div>
-      </MainLayout>
+      </DriverLayout>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="p-6">
+    <DriverLayout>
+      <div>
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -254,7 +266,7 @@ export const DriverDashboard = () => {
                         <MapPin className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-sm font-medium text-gray-600">Departure</p>
-                          <p className="text-gray-900 font-medium">{route.startLocation.address}</p>
+                          <p className="text-gray-900 font-medium">{(route as any).departureLocation || route.startLocation?.address || 'N/A'}</p>
                         </div>
                       </div>
 
@@ -262,7 +274,7 @@ export const DriverDashboard = () => {
                         <MapPin className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-sm font-medium text-gray-600">Arrival</p>
-                          <p className="text-gray-900 font-medium">{route.endLocation.address}</p>
+                          <p className="text-gray-900 font-medium">{(route as any).arrivalLocation || route.endLocation?.address || 'N/A'}</p>
                         </div>
                       </div>
 
@@ -271,7 +283,7 @@ export const DriverDashboard = () => {
                         <div>
                           <p className="text-sm font-medium text-gray-600">Truck</p>
                           <p className="text-gray-900 font-medium">
-                            {route.truck?.brand} {route.truck?.model} - {route.truck?.registrationNumber}
+                            {route.truck ? `${route.truck.brand} ${route.truck.model} - ${route.truck.registrationNumber}` : 'N/A'}
                           </p>
                         </div>
                       </div>
@@ -280,13 +292,13 @@ export const DriverDashboard = () => {
                         <div>
                           <p className="text-sm text-gray-600">Distance</p>
                           <p className="font-semibold text-gray-900">
-                            {route.distance.toFixed(0)} km
+                            {route.distance ? route.distance.toFixed(0) : 0} km
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Duration</p>
                           <p className="font-semibold text-gray-900">
-                            {route.estimatedDuration.toFixed(0)} min
+                            {route.estimatedDuration ? route.estimatedDuration.toFixed(0) : 0} min
                           </p>
                         </div>
                       </div>
@@ -300,6 +312,17 @@ export const DriverDashboard = () => {
                           )}
                         </div>
                       )}
+
+                      {/* Download PDF Button */}
+                      <div className="pt-4 border-t border-gray-200 mt-4">
+                        <button
+                          onClick={() => handleDownloadPDF(route)}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Download className="w-4 h-4" />
+                          Télécharger l'ordre de mission (PDF)
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -308,6 +331,6 @@ export const DriverDashboard = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </DriverLayout>
   );
 };

@@ -15,9 +15,15 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const userData = await login(email, password);
       toast.success('Connexion réussie!');
-      navigate('/dashboard');
+      
+      // Redirect based on user role
+      if (userData.role === 'Driver') {
+        navigate('/driver-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Erreur de connexion');
     } finally {

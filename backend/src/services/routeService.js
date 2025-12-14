@@ -26,7 +26,8 @@ class RouteService {
         path: 'driver',
         populate: { path: 'user' }
       })
-      .populate('truck');
+      .populate('truck')
+      .populate('trailer');
 
     if (!route) {
       throw new Error('Route not found');
@@ -44,6 +45,7 @@ class RouteService {
         populate: { path: 'user' }
       })
       .populate('truck')
+      .populate('trailer')
       .sort(sort)
       .skip(skip)
       .limit(limit);
@@ -63,7 +65,7 @@ class RouteService {
 
   async getRoutesByStatus(status) {
     const routes = await Route.find({ status })
-      .populate('driver truck');
+      .populate('driver truck trailer');
     return routes;
   }
 
@@ -72,7 +74,7 @@ class RouteService {
       routeId,
       updateData,
       { new: true, runValidators: true }
-    ).populate('driver truck');
+    ).populate('driver truck trailer');
 
     if (!route) {
       throw new Error('Route not found');
@@ -89,7 +91,7 @@ class RouteService {
   }
 
   async startRoute(routeId, departureKilometers) {
-    const route = await Route.findById(routeId).populate('truck');
+    const route = await Route.findById(routeId).populate('truck trailer');
 
     if (!route) {
       throw new Error('Route not found');

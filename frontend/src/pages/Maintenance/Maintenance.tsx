@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Wrench, Edit2, Trash2, Search, Calendar, TruckIcon } from 'lucide-react';
+import { Plus, Wrench, Edit2, Trash2, Search, Calendar } from 'lucide-react';
 import { maintenanceService } from '../../services/maintenanceService';
 import type { MaintenanceRecord } from '../../services/maintenanceService';
 import { toast } from 'react-hot-toast';

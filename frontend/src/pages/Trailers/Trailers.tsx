@@ -371,7 +371,6 @@ const Trailers = () => {
         {/* Tire List Modal */}
         {isTireModalOpen && selectedTrailerInfo && (
           <TireListModal
-            vehicleId={selectedTrailerInfo.id}
             vehicleName={selectedTrailerInfo.name}
             vehicleType="Trailer"
             tires={selectedTrailerTires}
