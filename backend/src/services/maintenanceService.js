@@ -86,9 +86,18 @@ class MaintenanceService {
             throw new Error('Maintenance record not found');
         }
 
+        const oldStatus = record.status;
+        console.log(`Updating maintenance record ${recordId}: oldStatus=${oldStatus}, newStatus=${updateData.status}`);
+        
         Object.assign(record, updateData);
         await record.save();
         await record.populate(['vehicleId', { path: 'createdBy', select: 'name email' }]);
+        
+        // If maintenance is completed, update vehicle status from Maintenance to Available
+        if (updateData.status === 'Completed' && oldStatus !== 'Completed') {
+            console.log(`Maintenance completed! Updating vehicle status for ${record.vehicleType} ${record.vehicleId}`);
+            await this.updateVehicleStatusAfterMaintenance(record.vehicleType, record.vehicleId);
+        }
         
         return record;
     }
@@ -101,6 +110,9 @@ class MaintenanceService {
 
         await record.complete(completionData);
         await record.populate(['vehicleId', { path: 'createdBy', select: 'name email' }]);
+        
+        // Update vehicle status from Maintenance to Available
+        await this.updateVehicleStatusAfterMaintenance(record.vehicleType, record.vehicleId);
         
         return record;
     }
@@ -403,6 +415,39 @@ class MaintenanceService {
         }
 
         return lastMaintenanceMap;
+    }
+
+    async updateVehicleStatusAfterMaintenance(vehicleType, vehicleId) {
+        try {
+            let vehicle = null;
+            
+            switch (vehicleType) {
+                case 'Truck':
+                    vehicle = await truckService.getTruckById(vehicleId);
+                    if (vehicle && vehicle.status === 'Maintenance') {
+                        await truckService.updateTruck(vehicleId, { status: 'Available' });
+                        console.log(`Truck ${vehicleId} status updated from Maintenance to Available`);
+                    }
+                    break;
+                case 'Trailer':
+                    vehicle = await trailerService.getTrailerById(vehicleId);
+                    if (vehicle && vehicle.status === 'Maintenance') {
+                        await trailerService.updateTrailer(vehicleId, { status: 'Available' });
+                        console.log(`Trailer ${vehicleId} status updated from Maintenance to Available`);
+                    }
+                    break;
+                case 'Tire':
+                    vehicle = await tireService.getTireById(vehicleId);
+                    if (vehicle && vehicle.status === 'NeedReplacement') {
+                        await tireService.updateTire(vehicleId, { status: 'Good' });
+                        console.log(`Tire ${vehicleId} status updated from NeedReplacement to Good`);
+                    }
+                    break;
+            }
+        } catch (error) {
+            console.error(`Error updating vehicle status after maintenance: ${error.message}`);
+            // Don't throw error, just log it - maintenance completion should still succeed
+        }
     }
 }
 
