@@ -30,6 +30,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
     { name: 'Pneus', href: '/tires', icon: CircleDot },
     { name: 'Routes', href: '/routes', icon: RouteIcon },
     { name: 'Maintenance', href: '/maintenance', icon: Wrench },
+    { name: 'Règles Maintenance', href: '/maintenance-rules', icon: Wrench },
   ];
 
   return (

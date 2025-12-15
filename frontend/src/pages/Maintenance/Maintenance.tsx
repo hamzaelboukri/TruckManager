@@ -136,13 +136,41 @@ const Maintenance = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Gestion de Maintenance</h1>
-          <button
-            onClick={handleCreateRecord}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Nouvelle Maintenance
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  const result = await maintenanceService.checkAllDueMaintenance(true);
+                  if (result && result.success !== false) {
+                    if (result.totalCreated && result.totalCreated > 0) {
+                      toast.success(`${result.totalCreated} maintenance(s) créée(s) automatiquement`);
+                      fetchRecords();
+                    } else if (result.count > 0) {
+                      toast.info(`${result.count} véhicule(s) nécessitent une maintenance`);
+                    } else {
+                      toast.success('Aucune maintenance requise');
+                    }
+                  } else {
+                    toast.success('Vérification terminée');
+                  }
+                } catch (error: any) {
+                  console.error('Error checking maintenance:', error);
+                  toast.error(error?.response?.data?.message || 'Erreur lors de la vérification');
+                }
+              }}
+              className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <Wrench className="w-5 h-5" />
+              Vérifier Tout
+            </button>
+            <button
+              onClick={handleCreateRecord}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Nouvelle Maintenance
+            </button>
+          </div>
         </div>
 
         {/* Statistics */}

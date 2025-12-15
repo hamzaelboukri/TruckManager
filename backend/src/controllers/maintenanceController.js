@@ -2,6 +2,7 @@ import maintenanceService from '../services/maintenanceService.js';
 
 export const createRule = async (req, res) => {
     try {
+        console.log('Creating rule with data:', req.body);
         const rule = await maintenanceService.createRule(req.body);
         res.status(201).json({
             success: true,
@@ -9,6 +10,7 @@ export const createRule = async (req, res) => {
             data: rule
         });
     } catch (error) {
+        console.error('Error creating rule:', error.message);
         res.status(400).json({
             success: false,
             message: error.message
@@ -275,7 +277,12 @@ export const deleteRecord = async (req, res) => {
 export const checkDueMaintenance = async (req, res) => {
     try {
         const { vehicleType, vehicleId } = req.params;
-        const result = await maintenanceService.checkDueMaintenance(vehicleType, vehicleId);
+        const { autoCreate } = req.query;
+        const result = await maintenanceService.checkDueMaintenance(
+            vehicleType, 
+            vehicleId, 
+            autoCreate === 'true'
+        );
         
         res.status(200).json({
             success: true,
@@ -291,12 +298,14 @@ export const checkDueMaintenance = async (req, res) => {
 
 export const checkAllDueMaintenance = async (req, res) => {
     try {
-        const allDue = await maintenanceService.checkAllDueMaintenance();
+        const { autoCreate } = req.query;
+        const result = await maintenanceService.checkAllDueMaintenance(autoCreate === 'true');
         
         res.status(200).json({
             success: true,
-            count: allDue.length,
-            data: allDue
+            count: result.totalDue,
+            totalCreated: result.totalCreated,
+            data: result.allDue
         });
     } catch (error) {
         res.status(400).json({

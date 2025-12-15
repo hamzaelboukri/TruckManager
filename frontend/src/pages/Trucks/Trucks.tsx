@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, Truck as TruckIcon, Edit2, Trash2, Search, CircleDot } from 'lucide-react';
+import { Plus, Truck as TruckIcon, Edit2, Trash2, Search, CircleDot, Wrench } from 'lucide-react';
 import { truckService } from '../../services/truckService';
 import { tireService } from '../../services/tireService';
+import { maintenanceService } from '../../services/maintenanceService';
 import type { Truck, Tire } from '../../types';
 import { toast } from 'react-hot-toast';
 import { MainLayout } from '../../layouts/MainLayout';
@@ -99,6 +100,30 @@ const Trucks = () => {
     setIsTireModalOpen(false);
     setSelectedTruckTires([]);
     setSelectedTruckInfo(null);
+  };
+
+  const handleCheckMaintenance = async (truck: Truck) => {
+    try {
+      const result = await maintenanceService.checkDueMaintenance('Truck', truck._id, true);
+      if (result && result.success !== false) {
+        if (result.hasDueMaintenance) {
+          const createdCount = result.createdRecords?.length || 0;
+          if (createdCount > 0) {
+            toast.success(`${createdCount} maintenance(s) créée(s) pour ${truck.registrationNumber}`);
+          } else {
+            toast.info(`${result.dueMaintenances?.length || 0} maintenance(s) en attente pour ${truck.registrationNumber}`);
+          }
+        } else {
+          toast.success(`Aucune maintenance requise pour ${truck.registrationNumber}`);
+        }
+        fetchTrucks();
+      } else {
+        toast.success('Vérification terminée');
+      }
+    } catch (error: any) {
+      console.error('Error checking maintenance:', error);
+      toast.error(error?.response?.data?.message || 'Erreur lors de la vérification de maintenance');
+    }
   };
 
   const filteredTrucks = trucks.filter(truck => {
@@ -305,10 +330,18 @@ const Trucks = () => {
                   <div className="flex gap-2 mb-2">
                     <button
                       onClick={() => handleViewTires(truck)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
                     >
                       <CircleDot className="w-4 h-4" />
                       Pneus
+                    </button>
+                    <button
+                      onClick={() => handleCheckMaintenance(truck)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                      title="Vérifier maintenance"
+                    >
+                      <Wrench className="w-4 h-4" />
+                      Maintenance
                     </button>
                   </div>
                   <div className="flex gap-2">

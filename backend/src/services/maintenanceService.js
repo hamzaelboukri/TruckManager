@@ -5,13 +5,7 @@ import trailerService from './trailerService.js';
 import tireService from './tireService.js';
 
 class MaintenanceService {
-    // ============ MAINTENANCE RULES ============
-    
-    /**
-     * Créer une nouvelle règle de maintenance
-     */
     async createRule(ruleData) {
-        // Vérifier que le véhicule existe
         if (ruleData.vehicleId) {
             await this.validateVehicleExists(ruleData.vehicleType, ruleData.vehicleId);
         }
@@ -21,9 +15,6 @@ class MaintenanceService {
         return rule;
     }
 
-    /**
-     * Obtenir toutes les règles de maintenance
-     */
     async getAllRules(filters = {}, options = {}) {
         const { page = 1, limit = 10, sortBy = '-createdAt' } = options;
         const skip = (page - 1) * limit;
@@ -49,9 +40,6 @@ class MaintenanceService {
         };
     }
 
-    /**
-     * Obtenir une règle par ID
-     */
     async getRuleById(ruleId) {
         const rule = await MaintenanceRule.findById(ruleId).populate('vehicleId');
         if (!rule) {
@@ -60,9 +48,6 @@ class MaintenanceService {
         return rule;
     }
 
-    /**
-     * Obtenir les règles pour un véhicule spécifique
-     */
     async getRulesByVehicle(vehicleType, vehicleId) {
         await this.validateVehicleExists(vehicleType, vehicleId);
 
@@ -75,16 +60,12 @@ class MaintenanceService {
         return rules;
     }
 
-    /**
-     * Mettre à jour une règle de maintenance
-     */
     async updateRule(ruleId, updateData) {
         const rule = await MaintenanceRule.findById(ruleId);
         if (!rule) {
             throw new Error('Maintenance rule not found');
         }
 
-        // Si le véhicule change, vérifier qu'il existe
         if (updateData.vehicleId && updateData.vehicleType) {
             await this.validateVehicleExists(updateData.vehicleType, updateData.vehicleId);
         }
@@ -96,9 +77,6 @@ class MaintenanceService {
         return rule;
     }
 
-    /**
-     * Supprimer une règle de maintenance
-     */
     async deleteRule(ruleId) {
         const rule = await MaintenanceRule.findByIdAndDelete(ruleId);
         if (!rule) {
@@ -107,9 +85,6 @@ class MaintenanceService {
         return rule;
     }
 
-    /**
-     * Activer/Désactiver une règle
-     */
     async toggleRuleStatus(ruleId, isActive) {
         const rule = await MaintenanceRule.findById(ruleId);
         if (!rule) {
@@ -123,11 +98,6 @@ class MaintenanceService {
         return rule;
     }
 
-    // ============ MAINTENANCE RECORDS ============
-    
-    /**
-     * Créer un enregistrement de maintenance
-     */
     async createRecord(recordData) {
         await this.validateVehicleExists(recordData.vehicleType, recordData.vehicleId);
 
@@ -137,9 +107,6 @@ class MaintenanceService {
         return record;
     }
 
-    /**
-     * Obtenir tous les enregistrements de maintenance
-     */
     async getAllRecords(filters = {}, options = {}) {
         const { page = 1, limit = 10, sortBy = '-date' } = options;
         const skip = (page - 1) * limit;
@@ -166,9 +133,6 @@ class MaintenanceService {
         };
     }
 
-    /**
-     * Obtenir un enregistrement par ID
-     */
     async getRecordById(recordId) {
         const record = await MaintenanceRecord.findById(recordId)
             .populate('vehicleId')
@@ -180,9 +144,6 @@ class MaintenanceService {
         return record;
     }
 
-    /**
-     * Obtenir l'historique de maintenance d'un véhicule
-     */
     async getVehicleMaintenanceHistory(vehicleType, vehicleId, options = {}) {
         await this.validateVehicleExists(vehicleType, vehicleId);
 
@@ -211,9 +172,6 @@ class MaintenanceService {
         };
     }
 
-    /**
-     * Mettre à jour un enregistrement de maintenance
-     */
     async updateRecord(recordId, updateData) {
         const record = await MaintenanceRecord.findById(recordId);
         if (!record) {
@@ -227,9 +185,6 @@ class MaintenanceService {
         return record;
     }
 
-    /**
-     * Compléter une maintenance
-     */
     async completeRecord(recordId, completionData) {
         const record = await MaintenanceRecord.findById(recordId);
         if (!record) {
@@ -242,9 +197,6 @@ class MaintenanceService {
         return record;
     }
 
-    /**
-     * Annuler une maintenance
-     */
     async cancelRecord(recordId, reason) {
         const record = await MaintenanceRecord.findById(recordId);
         if (!record) {
@@ -257,9 +209,6 @@ class MaintenanceService {
         return record;
     }
 
-    /**
-     * Supprimer un enregistrement
-     */
     async deleteRecord(recordId) {
         const record = await MaintenanceRecord.findByIdAndDelete(recordId);
         if (!record) {
@@ -268,28 +217,21 @@ class MaintenanceService {
         return record;
     }
 
-    // ============ VÉRIFICATION ET NOTIFICATIONS ============
-    
-    /**
-     * Vérifier les maintenances dues pour un véhicule
-     */
-    async checkDueMaintenance(vehicleType, vehicleId) {
+    async checkDueMaintenance(vehicleType, vehicleId, autoCreate = false) {
         await this.validateVehicleExists(vehicleType, vehicleId);
 
-        // Récupérer le véhicule avec ses kilomètres actuels
         const vehicle = await this.getVehicle(vehicleType, vehicleId);
         
-        // Récupérer toutes les règles actives pour ce véhicule
         const rules = await MaintenanceRule.find({
             vehicleType,
             vehicleId,
             isActive: true
         });
 
-        // Récupérer le dernier enregistrement de maintenance pour chaque type
         const lastMaintenances = await this.getLastMaintenanceForEachType(vehicleType, vehicleId);
 
         const dueMaintenances = [];
+        const createdRecords = [];
 
         for (const rule of rules) {
             const lastMaintenance = lastMaintenances.get(rule.maintenanceType);
@@ -305,43 +247,72 @@ class MaintenanceService {
                     lastMaintenance: lastMaintenance ? lastMaintenance.toObject() : null,
                     ...dueCheck
                 });
+
+                if (autoCreate) {
+                    const existingPending = await MaintenanceRecord.findOne({
+                        vehicleType,
+                        vehicleId,
+                        maintenanceType: rule.maintenanceType,
+                        status: { $in: ['Pending', 'InProgress'] }
+                    });
+
+                    if (!existingPending) {
+                        const newRecord = await MaintenanceRecord.create({
+                            vehicleType,
+                            vehicleId,
+                            maintenanceType: rule.maintenanceType,
+                            description: `Maintenance automatique - ${rule.description || rule.maintenanceType}`,
+                            priority: dueCheck.urgency === 'Urgent' ? 'High' : dueCheck.urgency === 'Soon' ? 'Medium' : 'Low',
+                            status: 'Pending',
+                            scheduledDate: new Date(),
+                            kilometersAtMaintenance: vehicle.currentKilometers,
+                            estimatedCost: rule.estimatedCost || 0
+                        });
+                        createdRecords.push(newRecord);
+                    }
+                }
             }
         }
 
         return {
             vehicle: vehicle.toObject(),
             dueMaintenances,
-            hasDueMaintenance: dueMaintenances.length > 0
+            hasDueMaintenance: dueMaintenances.length > 0,
+            createdRecords: autoCreate ? createdRecords : undefined
         };
     }
 
-    /**
-     * Vérifier toutes les maintenances dues
-     */
-    async checkAllDueMaintenance() {
+    async checkAllDueMaintenance(autoCreate = false) {
         const allDue = [];
+        let totalCreated = 0;
 
         const trucks = await truckService.getAllTrucks({}, { page: 1, limit: 1000 });
         for (const truck of trucks.trucks) {
-            const dueCheck = await this.checkDueMaintenance('Truck', truck._id);
+            const dueCheck = await this.checkDueMaintenance('Truck', truck._id, autoCreate);
             if (dueCheck.hasDueMaintenance) {
                 allDue.push({
                     vehicleType: 'Truck',
                     ...dueCheck
                 });
+                if (autoCreate && dueCheck.createdRecords) {
+                    totalCreated += dueCheck.createdRecords.length;
+                }
             }
         }
 
         try {
             const trailers = await trailerService.getAllTrailers({}, { page: 1, limit: 1000 });
-            if (trailers && trailers.trailers) {
-                for (const trailer of trailers.trailers) {
-                    const dueCheck = await this.checkDueMaintenance('Trailer', trailer._id);
+            if (trailers && trailers.data) {
+                for (const trailer of trailers.data) {
+                    const dueCheck = await this.checkDueMaintenance('Trailer', trailer._id, autoCreate);
                     if (dueCheck.hasDueMaintenance) {
                         allDue.push({
                             vehicleType: 'Trailer',
                             ...dueCheck
                         });
+                        if (autoCreate && dueCheck.createdRecords) {
+                            totalCreated += dueCheck.createdRecords.length;
+                        }
                     }
                 }
             }
@@ -353,12 +324,15 @@ class MaintenanceService {
             const tires = await tireService.getAllTires({}, { page: 1, limit: 1000 });
             if (tires && tires.tires) {
                 for (const tire of tires.tires) {
-                    const dueCheck = await this.checkDueMaintenance('Tire', tire._id);
+                    const dueCheck = await this.checkDueMaintenance('Tire', tire._id, autoCreate);
                     if (dueCheck.hasDueMaintenance) {
                         allDue.push({
                             vehicleType: 'Tire',
                             ...dueCheck
                         });
+                        if (autoCreate && dueCheck.createdRecords) {
+                            totalCreated += dueCheck.createdRecords.length;
+                        }
                     }
                 }
             }
@@ -366,28 +340,21 @@ class MaintenanceService {
             console.log('Tire check skipped');
         }
 
-        return allDue;
+        return {
+            allDue,
+            totalDue: allDue.length,
+            totalCreated: autoCreate ? totalCreated : undefined
+        };
     }
 
-    /**
-     * Obtenir les maintenances à venir
-     */
     async getUpcomingMaintenance(days = 30) {
         return await MaintenanceRecord.getUpcomingMaintenance(days);
     }
 
-    /**
-     * Obtenir les maintenances en retard
-     */
     async getOverdueMaintenance() {
         return await MaintenanceRecord.getOverdueMaintenance();
     }
 
-    // ============ STATISTIQUES ============
-    
-    /**
-     * Obtenir les statistiques de maintenance
-     */
     async getMaintenanceStatistics(filters = {}) {
         const { startDate, endDate, vehicleType, maintenanceType } = filters;
 
@@ -401,7 +368,6 @@ class MaintenanceService {
         if (maintenanceType) matchStage.maintenanceType = maintenanceType;
 
         const [costStats, typeStats, statusStats, totalRecords] = await Promise.all([
-            // Statistiques de coûts
             MaintenanceRecord.aggregate([
                 { $match: matchStage },
                 {
@@ -415,7 +381,6 @@ class MaintenanceService {
                 }
             ]),
 
-            // Statistiques par type
             MaintenanceRecord.aggregate([
                 { $match: matchStage },
                 {
@@ -428,7 +393,6 @@ class MaintenanceService {
                 { $sort: { count: -1 } }
             ]),
 
-            // Statistiques par statut
             MaintenanceRecord.aggregate([
                 { $match: matchStage },
                 {
@@ -439,7 +403,6 @@ class MaintenanceService {
                 }
             ]),
 
-            // Total d'enregistrements
             MaintenanceRecord.countDocuments(matchStage)
         ]);
 
@@ -457,9 +420,6 @@ class MaintenanceService {
         };
     }
 
-    /**
-     * Obtenir le coût total de maintenance d'un véhicule
-     */
     async getVehicleMaintenanceCost(vehicleType, vehicleId, filters = {}) {
         await this.validateVehicleExists(vehicleType, vehicleId);
 
@@ -489,11 +449,6 @@ class MaintenanceService {
         };
     }
 
-    // ============ MÉTHODES UTILITAIRES ============
-    
-    /**
-     * Valider qu'un véhicule existe
-     */
     async validateVehicleExists(vehicleType, vehicleId) {
         let vehicle;
         
@@ -518,16 +473,10 @@ class MaintenanceService {
         return vehicle;
     }
 
-    /**
-     * Récupérer un véhicule
-     */
     async getVehicle(vehicleType, vehicleId) {
         return await this.validateVehicleExists(vehicleType, vehicleId);
     }
 
-    /**
-     * Obtenir la dernière maintenance pour chaque type
-     */
     async getLastMaintenanceForEachType(vehicleType, vehicleId) {
         const records = await MaintenanceRecord.find({
             vehicleType,

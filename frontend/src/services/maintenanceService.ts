@@ -97,4 +97,18 @@ export const maintenanceService = {
     const response = await api.patch<ApiResponse<MaintenanceRecord>>(`/maintenance/records/${id}/status`, { status });
     return response.data;
   },
+
+  async checkDueMaintenance(vehicleType: string, vehicleId: string, autoCreate: boolean = false): Promise<any> {
+    const response = await api.get(`/maintenance/due/${vehicleType}/${vehicleId}`, {
+      params: { autoCreate: autoCreate.toString() }
+    });
+    return response.data;
+  },
+
+  async checkAllDueMaintenance(autoCreate: boolean = false): Promise<any> {
+    const response = await api.get('/maintenance/due-all', {
+      params: { autoCreate: autoCreate.toString() }
+    });
+    return response.data;
+  },
 };

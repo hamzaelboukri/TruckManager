@@ -55,16 +55,28 @@ router.get(
     getRulesByVehicle
 );
 
+router.get(
+    '/due-all',
+    isAdmin,
+    checkAllDueMaintenance
+);
+
+router.get(
+    '/upcoming',
+    isAdmin,
+    getUpcomingMaintenance
+);
+
+router.get(
+    '/overdue',
+    isAdmin,
+    getOverdueMaintenance
+);
+
 router
     .route('/records')
     .get(isAdmin, getAllRecords)
     .post(isAdmin, createRecord);
-
-router
-    .route('/records/:id')
-    .get(getRecordById)
-    .put(isAdmin, updateRecord)
-    .delete(isAdmin, deleteRecord);
 
 router.patch(
     '/records/:id/complete',
@@ -83,27 +95,15 @@ router.get(
     getVehicleMaintenanceHistory
 );
 
+router
+    .route('/records/:id')
+    .get(getRecordById)
+    .put(isAdmin, updateRecord)
+    .delete(isAdmin, deleteRecord);
+
 router.get(
-    '/check/:vehicleType/:vehicleId',
+    '/due/:vehicleType/:vehicleId',
     checkDueMaintenance
-);
-
-router.get(
-    '/check-all',
-    isAdmin,
-    checkAllDueMaintenance
-);
-
-router.get(
-    '/upcoming',
-    isAdmin,
-    getUpcomingMaintenance
-);
-
-router.get(
-    '/overdue',
-    isAdmin,
-    getOverdueMaintenance
 );
 
 router.get(
