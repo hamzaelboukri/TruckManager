@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents } from 'react-leaflet';
-import { X, MapPin, Truck, User, Calendar, Search } from 'lucide-react';
+import { X, MapPin, Truck, User, Calendar, Search, MapPinned, Navigation } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { api } from '../../services/api';
@@ -13,24 +13,26 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom icons
-const departureIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+// Custom icons with embedded SVG
+const createCustomIcon = (color: string) => {
+  const svgIcon = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="32" height="48">
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 7.2 12 24 12 24s12-16.8 12-24c0-6.6-5.4-12-12-12z" 
+            fill="${color}" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="5" fill="white"/>
+    </svg>
+  `;
+  return new L.DivIcon({
+    html: svgIcon,
+    className: 'custom-marker',
+    iconSize: [32, 48],
+    iconAnchor: [16, 48],
+    popupAnchor: [0, -48]
+  });
+};
 
-const arrivalIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+const departureIcon = createCustomIcon('#10b981'); // Green
+const arrivalIcon = createCustomIcon('#ef4444'); // Red
 
 interface MapModalProps {
   isOpen: boolean;
@@ -213,7 +215,7 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
               return userName.includes(searchLower) || userEmail.includes(searchLower);
             })
             .map((driver: any) => ({
-              _id: driver.user?._id,
+              _id: driver._id,
               name: driver.user?.name || 'N/A',
               email: driver.user?.email || 'N/A',
               driverId: driver._id
@@ -252,6 +254,7 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
       date: formData.date,
     };
 
+    console.log('Route data being sent:', routeData);
     onSave(routeData);
   };
 
@@ -325,7 +328,7 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-green-600" />
+                  <MapPinned className="w-5 h-5 text-green-600" />
                   <div className="flex-1">
                     <p className="text-xs text-gray-500">Point de départ</p>
                     <p className="font-semibold text-gray-900">{departure?.name || 'Cliquez pour sélectionner'}</p>
@@ -344,7 +347,7 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, onSave, ini
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-red-600" />
+                  <Navigation className="w-5 h-5 text-red-600" />
                   <div className="flex-1">
                     <p className="text-xs text-gray-500">Point d'arrivée</p>
                     <p className="font-semibold text-gray-900">{arrival?.name || 'Cliquez pour sélectionner'}</p>

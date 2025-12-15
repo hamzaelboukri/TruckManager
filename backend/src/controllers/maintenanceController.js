@@ -125,6 +125,25 @@ export const toggleRuleStatus = async (req, res) => {
     }
 };
 
+export const checkAllRules = async (req, res) => {
+    try {
+        const result = await maintenanceRuleService.checkAllRulesAndCreateMaintenances();
+        
+        res.status(200).json({
+            success: true,
+            message: result.totalCreated > 0 
+                ? `${result.totalCreated} maintenance record(s) created automatically`
+                : 'All vehicles are up to date',
+            ...result
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 export const createRecord = async (req, res) => {
     try {
         const recordData = {

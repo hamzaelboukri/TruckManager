@@ -49,6 +49,7 @@ export const getRouteById = async (req, res) => {
 // Create new route (Admin only)
 export const createRoute = async (req, res) => {
   try {
+    console.log('Creating route with data:', req.body);
     const route = await routeService.createRoute(req.body);
     res.status(201).json({
       success: true,
@@ -56,10 +57,10 @@ export const createRoute = async (req, res) => {
       data: route
     });
   } catch (error) {
+    console.error('Error creating route:', error.message);
     res.status(400).json({
       success: false,
-      message: 'Error creating route',
-      error: error.message
+      message: error.message
     });
   }
 };

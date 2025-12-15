@@ -5,6 +5,8 @@ import tireService from './tireService.js';
 
 class RouteService {
   async createRoute(routeData) {
+    console.log('RouteService: Received routeData:', JSON.stringify(routeData, null, 2));
+    
     const existingRoute = await Route.findOne({
       routeNumber: routeData.routeNumber
     });
@@ -13,11 +15,20 @@ class RouteService {
       throw new Error('Route with this number already exists');
     }
 
-    const route = await Route.create(routeData);
-    return await route.populate({
-      path: 'driver',
-      populate: { path: 'user' }
-    }).populate('truck');
+    try {
+      const route = await Route.create(routeData);
+      await route.populate([
+        {
+          path: 'driver',
+          populate: { path: 'user' }
+        },
+        { path: 'truck' }
+      ]);
+      return route;
+    } catch (error) {
+      console.error('RouteService: Error creating route:', error.message);
+      throw error;
+    }
   }
 
   async getRouteById(routeId) {

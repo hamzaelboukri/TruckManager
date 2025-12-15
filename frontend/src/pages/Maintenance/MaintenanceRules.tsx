@@ -154,18 +154,45 @@ const MaintenanceRules = () => {
     { value: 'Other', label: 'Autre' }
   ];
 
+  const handleCheckAllRules = async () => {
+    try {
+      const result = await maintenanceService.checkAllRules();
+      
+      if (result && result.success) {
+        if (result.totalCreated > 0) {
+          toast.success(`${result.totalCreated} maintenance(s) créée(s) automatiquement`);
+        } else {
+          toast.success('Tous les véhicules sont à jour');
+        }
+      }
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 'Erreur lors de la vérification';
+      toast.error(errorMessage);
+      console.error('Error checking rules:', error);
+    }
+  };
+
   return (
     <MainLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Règles de Maintenance</h1>
-          <button
-            onClick={handleCreateRule}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Nouvelle Règle
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleCheckAllRules}
+              className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+              Vérifier Règles
+            </button>
+            <button
+              onClick={handleCreateRule}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Nouvelle Règle
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

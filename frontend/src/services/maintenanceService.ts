@@ -111,4 +111,9 @@ export const maintenanceService = {
     });
     return response.data;
   },
+
+  async checkAllRules(): Promise<any> {
+    const response = await api.post('/maintenance/rules/check-all');
+    return response.data;
+  },
 };

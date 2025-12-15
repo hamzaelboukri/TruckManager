@@ -10,7 +10,8 @@ import {
   LogOut,
   Menu,
   X,
-  CircleDot
+  CircleDot,
+  Bell
 } from 'lucide-react';
 
 export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -31,6 +32,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
     { name: 'Routes', href: '/routes', icon: RouteIcon },
     { name: 'Maintenance', href: '/maintenance', icon: Wrench },
     { name: 'Règles Maintenance', href: '/maintenance-rules', icon: Wrench },
+    { name: 'Alertes Maintenance', href: '/maintenance-alerts', icon: Bell },
   ];
 
   return (

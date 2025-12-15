@@ -1,4 +1,5 @@
 import MaintenanceRule from '../models/MaintenanceRule.js';
+import MaintenanceRecord from '../models/MaintenanceRecord.js';
 import truckService from './truckService.js';
 import trailerService from './trailerService.js';
 import tireService from './tireService.js';
@@ -11,6 +12,11 @@ class MaintenanceRuleService {
 
         const rule = await MaintenanceRule.create(ruleData);
         await rule.populate('vehicleId');
+        
+        if (rule.isActive) {
+            await this.checkAndCreateMaintenanceForRule(rule);
+        }
+        
         return rule;
     }
 
@@ -119,6 +125,100 @@ class MaintenanceRuleService {
         }
 
         return vehicle;
+    }
+
+    async checkAndCreateMaintenanceForRule(rule) {
+        let vehicles = [];
+        const createdMaintenances = [];
+        
+        if (rule.vehicleId) {
+            const vehicle = await this.validateVehicleExists(rule.vehicleType, rule.vehicleId);
+            vehicles = [vehicle];
+        } else {
+            switch (rule.vehicleType) {
+                case 'Truck':
+                    const trucks = await truckService.getAllTrucks();
+                    vehicles = trucks.data || trucks;
+                    break;
+                case 'Trailer':
+                    const trailers = await trailerService.getAllTrailers();
+                    vehicles = trailers.data || trailers;
+                    break;
+                case 'Tire':
+                    const tires = await tireService.getAllTires();
+                    vehicles = tires.data || tires;
+                    break;
+            }
+        }
+
+        for (const vehicle of vehicles) {
+            const lastMaintenance = await MaintenanceRecord.findOne({
+                vehicleType: rule.vehicleType,
+                vehicleId: vehicle._id,
+                maintenanceType: rule.maintenanceType
+            }).sort({ scheduledDate: -1 });
+
+            let lastMaintenanceKm = 0;
+            let lastMaintenanceDate = null;
+
+            if (lastMaintenance) {
+                lastMaintenanceKm = lastMaintenance.currentKilometers || 0;
+                lastMaintenanceDate = lastMaintenance.completedDate || lastMaintenance.scheduledDate;
+            }
+
+            const currentKm = vehicle.kilometers || vehicle.mileage || 0;
+            const { isDue, reason, urgency } = rule.isDue(currentKm, lastMaintenanceKm, lastMaintenanceDate);
+
+            if (isDue) {
+                const existingPending = await MaintenanceRecord.findOne({
+                    vehicleType: rule.vehicleType,
+                    vehicleId: vehicle._id,
+                    maintenanceType: rule.maintenanceType,
+                    status: { $in: ['Pending', 'InProgress'] }
+                });
+
+                if (!existingPending) {
+                    let priority = 'Low';
+                    if (urgency === 'Urgent') priority = 'High';
+                    else if (urgency === 'Soon') priority = 'Medium';
+
+                    const newMaintenance = await MaintenanceRecord.create({
+                        vehicleType: rule.vehicleType,
+                        vehicleId: vehicle._id,
+                        maintenanceType: rule.maintenanceType,
+                        description: `${rule.description} - ${reason}`,
+                        scheduledDate: new Date(),
+                        status: 'Pending',
+                        priority,
+                        estimatedCost: rule.estimatedCost || 0,
+                        currentKilometers: currentKm,
+                        notes: `Créé automatiquement par la règle: ${rule.description}. ${reason}`
+                    });
+
+                    createdMaintenances.push(newMaintenance);
+                }
+            }
+        }
+
+        return createdMaintenances;
+    }
+
+    async checkAllRulesAndCreateMaintenances() {
+        const rules = await MaintenanceRule.find({ isActive: true });
+        let totalCreated = 0;
+        const allCreated = [];
+
+        for (const rule of rules) {
+            const created = await this.checkAndCreateMaintenanceForRule(rule);
+            totalCreated += created.length;
+            allCreated.push(...created);
+        }
+
+        return {
+            success: true,
+            totalCreated,
+            createdMaintenances: allCreated
+        };
     }
 }
 

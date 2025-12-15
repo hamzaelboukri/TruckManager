@@ -8,6 +8,7 @@ import {
     updateRule,
     deleteRule,
     toggleRuleStatus,
+    checkAllRules,
     // Records
     createRecord,
     getAllRecords,
@@ -32,6 +33,8 @@ import { isAdmin } from '../middleware/role.js';
 const router = express.Router();
 
 router.use(authMiddleware);
+
+router.post('/rules/check-all', isAdmin, checkAllRules);
 
 router
     .route('/rules')

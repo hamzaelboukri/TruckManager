@@ -16,6 +16,7 @@ import Trailers from './pages/Trailers/Trailers';
 import Tires from './pages/Tires/Tires';
 import Maintenance from './pages/Maintenance/Maintenance';
 import MaintenanceRules from './pages/Maintenance/MaintenanceRules';
+import MaintenanceAlerts from './pages/Maintenance/MaintenanceAlerts';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
               <Route path="/driver-routes" element={<DriverRoutes />} />
               <Route path="/maintenance" element={<Maintenance />} />
               <Route path="/maintenance-rules" element={<MaintenanceRules />} />
+              <Route path="/maintenance-alerts" element={<MaintenanceAlerts />} />
             </Route>
           </RouterRoutes>
           <Toaster position="top-right" />
