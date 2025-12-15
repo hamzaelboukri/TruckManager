@@ -129,7 +129,6 @@ const Trucks = () => {
   const filteredTrucks = trucks.filter(truck => {
     const matchesSearch = 
       truck.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      truck.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       truck.model.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
@@ -137,27 +136,17 @@ const Trucks = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Available': return 'bg-green-100 text-green-800';
-      case 'InUse': return 'bg-blue-100 text-blue-800';
+      case 'InRoute': return 'bg-blue-100 text-blue-800';
       case 'Maintenance': return 'bg-yellow-100 text-yellow-800';
       case 'OutOfService': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getConditionColor = (condition: string) => {
-    switch (condition) {
-      case 'Excellent': return 'text-green-600';
-      case 'Good': return 'text-blue-600';
-      case 'Fair': return 'text-yellow-600';
-      case 'Poor': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
   const stats = {
     total: trucks.length,
     available: trucks.filter(t => t.status === 'Available').length,
-    inUse: trucks.filter(t => t.status === 'InUse').length,
+    inRoute: trucks.filter(t => t.status === 'InRoute').length,
     maintenance: trucks.filter(t => t.status === 'Maintenance').length,
   };
 
@@ -198,8 +187,8 @@ const Trucks = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">En Service</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.inUse}</p>
+                <p className="text-gray-500 text-sm">En Route</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.inRoute}</p>
               </div>
               <TruckIcon className="w-10 h-10 text-blue-400" />
             </div>
@@ -222,14 +211,14 @@ const Trucks = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Rechercher par matricule, marque ou modèle..."
+                placeholder="Rechercher par matricule ou modèle..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-2">
-              {['all', 'Available', 'InUse', 'Maintenance', 'OutOfService'].map((status) => (
+              {['all', 'Available', 'InRoute', 'Maintenance', 'OutOfService'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
@@ -266,29 +255,23 @@ const Trucks = () => {
                       <TruckIcon className="w-10 h-10 text-blue-600" />
                       <div>
                         <h3 className="font-bold text-lg text-gray-900">{truck.registrationNumber}</h3>
-                        <p className="text-sm text-gray-500">{truck.brand} {truck.model}</p>
+                        <p className="text-sm text-gray-500">{truck.model} ({truck.year})</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600 text-sm">Année:</span>
-                      <span className="font-semibold">{truck.year}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
                       <span className="text-gray-600 text-sm">Kilométrage:</span>
                       <span className="font-semibold">{truck.currentKilometers.toLocaleString()} km</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600 text-sm">Carburant:</span>
-                      <span className="font-semibold">{truck.currentFuelLevel}L / {truck.fuelCapacity}L</span>
+                      <span className="text-gray-600 text-sm">Capacité carburant:</span>
+                      <span className="font-semibold">{truck.fuelCapacity}L</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600 text-sm">Condition:</span>
-                      <span className={`font-semibold ${getConditionColor(truck.condition)}`}>
-                        {truck.condition}
-                      </span>
+                      <span className="text-gray-600 text-sm">Date d'achat:</span>
+                      <span className="font-semibold">{new Date(truck.purchaseDate).toLocaleDateString()}</span>
                     </div>
                   </div>
 

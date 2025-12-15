@@ -161,7 +161,7 @@ class MaintenanceService {
                         vehicleType,
                         vehicleId,
                         maintenanceType: rule.maintenanceType,
-                        status: { $in: ['Pending', 'InProgress'] }
+                        status: { $in: ['Scheduled', 'InProgress'] }
                     });
 
                     if (!existingPending) {
@@ -171,10 +171,12 @@ class MaintenanceService {
                             maintenanceType: rule.maintenanceType,
                             description: `Maintenance automatique - ${rule.description || rule.maintenanceType}`,
                             priority: dueCheck.urgency === 'Urgent' ? 'High' : dueCheck.urgency === 'Soon' ? 'Medium' : 'Low',
-                            status: 'Pending',
-                            scheduledDate: new Date(),
+                            status: 'Scheduled',
+                            date: new Date(),
                             kilometersAtMaintenance: vehicle.currentKilometers,
-                            estimatedCost: rule.estimatedCost || 0
+                            cost: rule.estimatedCost || 0,
+                            performedBy: 'Système automatique',
+                            createdBy: new (await import('mongoose')).default.Types.ObjectId('000000000000000000000000')
                         });
                         createdRecords.push(newRecord);
                     }

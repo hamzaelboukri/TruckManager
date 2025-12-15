@@ -18,16 +18,12 @@ export interface AuthResponse {
 export interface Truck {
   _id: string;
   registrationNumber: string;
-  brand: string;
   model: string;
   year: number;
-  status: 'Available' | 'InUse' | 'Maintenance' | 'OutOfService';
-  condition: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+  purchaseDate: string;
+  status: 'Available' | 'InRoute' | 'Maintenance' | 'OutOfService';
   currentKilometers: number;
   fuelCapacity: number;
-  currentFuelLevel: number;
-  lastMaintenanceDate?: string;
-  nextMaintenanceKilometers?: number;
   driver?: string;
   createdAt: string;
   updatedAt: string;

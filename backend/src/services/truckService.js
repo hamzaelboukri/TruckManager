@@ -1,4 +1,5 @@
 import Truck from '../models/Truck.js';
+import maintenanceRuleService from './maintenanceRuleService.js';
 
 class TruckService {
   async createTruck(truckData) {
@@ -58,6 +59,22 @@ class TruckService {
     if (!truck) {
       throw new Error('Truck not found');
     }
+
+    // Check maintenance rules for this truck after update
+    try {
+      console.log(`Checking maintenance rules for truck ${truckId}`);
+      const rules = await maintenanceRuleService.getRulesByVehicle('Truck', truckId);
+      console.log(`Found ${rules.length} active rules for this truck`);
+      for (const rule of rules) {
+        console.log(`Checking rule: ${rule.maintenanceType} - ${rule.description}`);
+        const created = await maintenanceRuleService.checkAndCreateMaintenanceForRule(rule);
+        console.log(`Created ${created.length} maintenance records from this rule`);
+      }
+    } catch (error) {
+      console.log('Error checking maintenance rules:', error.message);
+      console.error(error);
+    }
+
     return truck;
   }
 
@@ -76,6 +93,22 @@ class TruckService {
     }
 
     await truck.updateKilometers(kilometers);
+
+    // Check maintenance rules after updating kilometers
+    try {
+      console.log(`Checking maintenance rules after updating kilometers for truck ${truckId}`);
+      const rules = await maintenanceRuleService.getRulesByVehicle('Truck', truckId);
+      console.log(`Found ${rules.length} active rules for this truck`);
+      for (const rule of rules) {
+        console.log(`Checking rule: ${rule.maintenanceType} - ${rule.description}`);
+        const created = await maintenanceRuleService.checkAndCreateMaintenanceForRule(rule);
+        console.log(`Created ${created.length} maintenance records from this rule`);
+      }
+    } catch (error) {
+      console.log('Error checking maintenance rules:', error.message);
+      console.error(error);
+    }
+
     return truck;
   }
 

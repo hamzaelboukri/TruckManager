@@ -84,12 +84,12 @@ export const maintenanceService = {
   },
 
   async getUpcomingMaintenance(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<MaintenanceRecord>> {
-    const response = await api.get<PaginatedResponse<MaintenanceRecord>>('/maintenance/records/upcoming', { params });
+    const response = await api.get<PaginatedResponse<MaintenanceRecord>>('/maintenance/upcoming', { params });
     return response.data;
   },
 
   async getOverdueMaintenance(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<MaintenanceRecord>> {
-    const response = await api.get<PaginatedResponse<MaintenanceRecord>>('/maintenance/records/overdue', { params });
+    const response = await api.get<PaginatedResponse<MaintenanceRecord>>('/maintenance/overdue', { params });
     return response.data;
   },
 

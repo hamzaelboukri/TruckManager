@@ -1,6 +1,7 @@
 import Tire from '../models/Tire.js';
 import Truck from '../models/Truck.js';
 import Trailer from '../models/Trailer.js';
+import maintenanceRuleService from './maintenanceRuleService.js';
 
 class TireService {
   async createTire(tireData) {
@@ -67,6 +68,17 @@ class TireService {
     if (!tire) {
       throw new Error('Tire not found');
     }
+
+    // Check maintenance rules for this tire after update
+    try {
+      const rules = await maintenanceRuleService.getRulesByVehicle('Tire', tireId);
+      for (const rule of rules) {
+        await maintenanceRuleService.checkAndCreateMaintenanceForRule(rule);
+      }
+    } catch (error) {
+      console.log('Error checking maintenance rules:', error.message);
+    }
+
     return tire;
   }
 
@@ -85,6 +97,17 @@ class TireService {
     }
 
     await tire.updateWear(newKilometers);
+
+    // Check maintenance rules after updating wear
+    try {
+      const rules = await maintenanceRuleService.getRulesByVehicle('Tire', tireId);
+      for (const rule of rules) {
+        await maintenanceRuleService.checkAndCreateMaintenanceForRule(rule);
+      }
+    } catch (error) {
+      console.log('Error checking maintenance rules:', error.message);
+    }
+
     return tire;
   }
 

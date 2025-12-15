@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Settings, Edit2, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Settings, Edit2, Trash2, ToggleLeft, ToggleRight, Info, Zap } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { MainLayout } from '../../layouts/MainLayout';
 import { api } from '../../services/api';
+import { maintenanceService } from '../../services/maintenanceService';
 
 interface MaintenanceRule {
   _id: string;
@@ -194,6 +195,8 @@ const MaintenanceRules = () => {
             </button>
           </div>
         </div>
+
+  
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

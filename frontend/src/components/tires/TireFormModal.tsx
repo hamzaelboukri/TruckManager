@@ -263,7 +263,7 @@ const TireFormModal = ({ tire, onClose }: TireFormModalProps) => {
                 <option value="">Sélectionner un véhicule...</option>
                 {vehicles.map((vehicle) => (
                   <option key={vehicle._id} value={vehicle._id}>
-                    {vehicle.registrationNumber} - {vehicle.brand} {vehicle.model}
+                    {vehicle.registrationNumber} - {vehicle.model}
                   </option>
                 ))}
               </select>

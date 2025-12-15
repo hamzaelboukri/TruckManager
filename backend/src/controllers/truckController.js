@@ -100,14 +100,17 @@ export const createTruck = async (req, res) => {
 
 export const updateTruck = async (req, res) => {
     try {
-        const allowedUpdates = ['model', 'year', 'currentKilometers', 'fuelCapacity', 'status', 'purchaseDate'];
+        console.log('Updating truck with data:', req.body);
+        const allowedUpdates = ['registrationNumber', 'model', 'year', 'currentKilometers', 'fuelCapacity', 'status', 'purchaseDate'];
         const updates = Object.keys(req.body);
         const isValidUpdate = updates.every(update => allowedUpdates.includes(update));
 
         if (!isValidUpdate) {
+            const invalidFields = updates.filter(update => !allowedUpdates.includes(update));
+            console.log('Invalid fields:', invalidFields);
             return res.status(400).json({
                 success: false,
-                error: 'Invalid updates. Allowed fields: ' + allowedUpdates.join(', ')
+                error: 'Invalid updates. Allowed fields: ' + allowedUpdates.join(', ') + '. Invalid fields: ' + invalidFields.join(', ')
             });
         }
 

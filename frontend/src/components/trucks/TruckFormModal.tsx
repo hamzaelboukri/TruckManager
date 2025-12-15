@@ -12,16 +12,12 @@ interface TruckFormModalProps {
 const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
   const [formData, setFormData] = useState({
     registrationNumber: '',
-    brand: '',
     model: '',
     year: new Date().getFullYear(),
-    status: 'Available' as 'Available' | 'InUse' | 'Maintenance' | 'OutOfService',
-    condition: 'Good' as 'Excellent' | 'Good' | 'Fair' | 'Poor',
+    purchaseDate: '',
+    status: 'Available' as 'Available' | 'InRoute' | 'Maintenance' | 'OutOfService',
     currentKilometers: 0,
     fuelCapacity: 0,
-    currentFuelLevel: 0,
-    lastMaintenanceDate: '',
-    nextMaintenanceKilometers: 0,
   });
 
   const [loading, setLoading] = useState(false);
@@ -29,19 +25,26 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
   useEffect(() => {
     if (truck) {
       setFormData({
-        registrationNumber: truck.registrationNumber,
-        brand: truck.brand,
-        model: truck.model,
-        year: truck.year,
-        status: truck.status,
-        condition: truck.condition,
-        currentKilometers: truck.currentKilometers,
-        fuelCapacity: truck.fuelCapacity,
-        currentFuelLevel: truck.currentFuelLevel,
-        lastMaintenanceDate: truck.lastMaintenanceDate 
-          ? new Date(truck.lastMaintenanceDate).toISOString().split('T')[0] 
+        registrationNumber: truck.registrationNumber || '',
+        model: truck.model || '',
+        year: truck.year || new Date().getFullYear(),
+        purchaseDate: truck.purchaseDate 
+          ? new Date(truck.purchaseDate).toISOString().split('T')[0] 
           : '',
-        nextMaintenanceKilometers: truck.nextMaintenanceKilometers || 0,
+        status: truck.status || 'Available',
+        currentKilometers: truck.currentKilometers || 0,
+        fuelCapacity: truck.fuelCapacity || 0,
+      });
+    } else {
+      // Reset form when creating new truck
+      setFormData({
+        registrationNumber: '',
+        model: '',
+        year: new Date().getFullYear(),
+        purchaseDate: '',
+        status: 'Available',
+        currentKilometers: 0,
+        fuelCapacity: 0,
       });
     }
   }, [truck]);
@@ -71,7 +74,7 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['year', 'currentKilometers', 'fuelCapacity', 'currentFuelLevel', 'nextMaintenanceKilometers'].includes(name)
+      [name]: ['year', 'currentKilometers', 'fuelCapacity'].includes(name)
         ? Number(value)
         : value
     }));
@@ -110,22 +113,6 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
               />
             </div>
 
-            {/* Brand */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Marque <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="brand"
-                value={formData.brand}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: Volvo"
-              />
-            </div>
-
             {/* Model */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -159,6 +146,21 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
               />
             </div>
 
+            {/* Purchase Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date d'Achat <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="purchaseDate"
+                value={formData.purchaseDate}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
             {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -172,28 +174,9 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="Available">Disponible</option>
-                <option value="InUse">En Service</option>
+                <option value="InRoute">En Route</option>
                 <option value="Maintenance">Maintenance</option>
                 <option value="OutOfService">Hors Service</option>
-              </select>
-            </div>
-
-            {/* Condition */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Condition <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="condition"
-                value={formData.condition}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="Excellent">Excellent</option>
-                <option value="Good">Bon</option>
-                <option value="Fair">Moyen</option>
-                <option value="Poor">Mauvais</option>
               </select>
             </div>
 
@@ -231,53 +214,7 @@ const TruckFormModal = ({ truck, onClose }: TruckFormModalProps) => {
               />
             </div>
 
-            {/* Current Fuel Level */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Niveau Carburant Actuel (L) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="currentFuelLevel"
-                value={formData.currentFuelLevel}
-                onChange={handleChange}
-                required
-                min="0"
-                max={formData.fuelCapacity}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: 250"
-              />
-            </div>
 
-            {/* Last Maintenance Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dernière Maintenance
-              </label>
-              <input
-                type="date"
-                name="lastMaintenanceDate"
-                value={formData.lastMaintenanceDate}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Next Maintenance Kilometers */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prochaine Maintenance (km)
-              </label>
-              <input
-                type="number"
-                name="nextMaintenanceKilometers"
-                value={formData.nextMaintenanceKilometers}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: 170000"
-              />
-            </div>
           </div>
 
           {/* Action Buttons */}

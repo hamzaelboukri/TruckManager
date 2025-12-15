@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import MaintenanceRule from '../models/MaintenanceRule.js';
 import MaintenanceRecord from '../models/MaintenanceRecord.js';
 import truckService from './truckService.js';
@@ -135,20 +136,31 @@ class MaintenanceRuleService {
             const vehicle = await this.validateVehicleExists(rule.vehicleType, rule.vehicleId);
             vehicles = [vehicle];
         } else {
-            switch (rule.vehicleType) {
-                case 'Truck':
-                    const trucks = await truckService.getAllTrucks();
-                    vehicles = trucks.data || trucks;
-                    break;
-                case 'Trailer':
-                    const trailers = await trailerService.getAllTrailers();
-                    vehicles = trailers.data || trailers;
-                    break;
-                case 'Tire':
-                    const tires = await tireService.getAllTires();
-                    vehicles = tires.data || tires;
-                    break;
+            try {
+                switch (rule.vehicleType) {
+                    case 'Truck':
+                        const trucksResult = await truckService.getAllTrucks();
+                        vehicles = (trucksResult && trucksResult.trucks) ? trucksResult.trucks : [];
+                        break;
+                    case 'Trailer':
+                        const trailersResult = await trailerService.getAllTrailers();
+                        vehicles = (trailersResult && trailersResult.trailers) ? trailersResult.trailers : [];
+                        break;
+                    case 'Tire':
+                        const tiresResult = await tireService.getAllTires();
+                        vehicles = Array.isArray(tiresResult) ? tiresResult : [];
+                        break;
+                }
+            } catch (error) {
+                console.error(`Error fetching vehicles: ${error.message}`);
+                vehicles = [];
             }
+        }
+
+        // Ensure vehicles is iterable
+        if (!Array.isArray(vehicles)) {
+            console.error('Vehicles is not an array:', vehicles);
+            vehicles = [];
         }
 
         for (const vehicle of vehicles) {
@@ -174,7 +186,7 @@ class MaintenanceRuleService {
                     vehicleType: rule.vehicleType,
                     vehicleId: vehicle._id,
                     maintenanceType: rule.maintenanceType,
-                    status: { $in: ['Pending', 'InProgress'] }
+                    status: { $in: ['Scheduled', 'InProgress'] }
                 });
 
                 if (!existingPending) {
@@ -187,11 +199,13 @@ class MaintenanceRuleService {
                         vehicleId: vehicle._id,
                         maintenanceType: rule.maintenanceType,
                         description: `${rule.description} - ${reason}`,
-                        scheduledDate: new Date(),
-                        status: 'Pending',
+                        date: new Date(),
+                        status: 'Scheduled',
                         priority,
-                        estimatedCost: rule.estimatedCost || 0,
-                        currentKilometers: currentKm,
+                        cost: rule.estimatedCost || 0,
+                        kilometersAtMaintenance: currentKm,
+                        performedBy: 'Système automatique',
+                        createdBy: new mongoose.Types.ObjectId('000000000000000000000000'),
                         notes: `Créé automatiquement par la règle: ${rule.description}. ${reason}`
                     });
 

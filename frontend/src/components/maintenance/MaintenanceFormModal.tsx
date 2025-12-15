@@ -187,7 +187,7 @@ const MaintenanceFormModal = ({ record, onClose }: MaintenanceFormModalProps) =>
                   <option key={vehicle._id} value={vehicle._id}>
                     {formData.vehicleType === 'Tire' 
                       ? `${(vehicle as Tire).serialNumber} - ${(vehicle as Tire).position}`
-                      : `${(vehicle as Truck | Trailer).registrationNumber} - ${(vehicle as Truck | Trailer).brand} ${(vehicle as Truck | Trailer).model}`
+                      : `${(vehicle as Truck | Trailer).registrationNumber} - ${(vehicle as Truck | Trailer).model}`
                     }
                   </option>
                 ))}

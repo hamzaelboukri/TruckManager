@@ -81,19 +81,17 @@ export const generateRoutePDF = (route: Route, driverName: string) => {
   doc.setFont('helvetica', 'normal');
   
   if (route.truck) {
-    const brand = route.truck.brand || 'Camion';
-    const model = route.truck.model || '';
+    const model = route.truck.model || 'Camion';
     const registration = route.truck.registrationNumber || 'N/A';
-    const truckInfo = `${brand}${model ? ' ' + model : ''} - ${registration}`;
+    const truckInfo = `${model} - ${registration}`;
     doc.text(truckInfo, 20, yPosition);
     yPosition += 8;
   }
   
   if (route.trailer) {
-    const brand = route.trailer.brand || 'Remorque';
-    const model = route.trailer.model || '';
+    const model = route.trailer.model || 'Remorque';
     const registration = route.trailer.registrationNumber || 'N/A';
-    const trailerInfo = `Remorque: ${brand}${model ? ' ' + model : ''} - ${registration}`;
+    const trailerInfo = `Remorque: ${model} - ${registration}`;
     doc.text(trailerInfo, 20, yPosition);
     yPosition += 8;
   }
