@@ -37,8 +37,8 @@ const Trucks = () => {
       const response = await truckService.getAllTrucks(params);
       const trucksData = response.data || [];
       setTrucks(trucksData);
-      setTotalPages(response.pages || 1);
-      setTotalTrucks(response.total || 0);
+      setTotalPages(response.pagination?.pages || 1);
+      setTotalTrucks(response.pagination?.total || 0);
       
       // Fetch tires for each truck
       const tiresMap: Record<string, Tire[]> = {};
@@ -111,7 +111,7 @@ const Trucks = () => {
           if (createdCount > 0) {
             toast.success(`${createdCount} maintenance(s) créée(s) pour ${truck.registrationNumber}`);
           } else {
-            toast.info(`${result.dueMaintenances?.length || 0} maintenance(s) en attente pour ${truck.registrationNumber}`);
+            toast.success(`${result.dueMaintenances?.length || 0} maintenance(s) en attente pour ${truck.registrationNumber}`);
           }
         } else {
           toast.success(`Aucune maintenance requise pour ${truck.registrationNumber}`);

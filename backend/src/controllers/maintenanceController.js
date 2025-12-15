@@ -1,9 +1,10 @@
 import maintenanceService from '../services/maintenanceService.js';
+import maintenanceRuleService from '../services/maintenanceRuleService.js';
 
 export const createRule = async (req, res) => {
     try {
         console.log('Creating rule with data:', req.body);
-        const rule = await maintenanceService.createRule(req.body);
+        const rule = await maintenanceRuleService.createRule(req.body);
         res.status(201).json({
             success: true,
             message: 'Maintenance rule created successfully',
@@ -28,7 +29,7 @@ export const getAllRules = async (req, res) => {
         if (isActive !== undefined) filters.isActive = isActive === 'true';
 
         const options = { page, limit, sortBy };
-        const result = await maintenanceService.getAllRules(filters, options);
+        const result = await maintenanceRuleService.getAllRules(filters, options);
 
         res.status(200).json({
             success: true,
@@ -44,7 +45,7 @@ export const getAllRules = async (req, res) => {
 
 export const getRuleById = async (req, res) => {
     try {
-        const rule = await maintenanceService.getRuleById(req.params.id);
+        const rule = await maintenanceRuleService.getRuleById(req.params.id);
         res.status(200).json({
             success: true,
             data: rule
@@ -60,7 +61,7 @@ export const getRuleById = async (req, res) => {
 export const getRulesByVehicle = async (req, res) => {
     try {
         const { vehicleType, vehicleId } = req.params;
-        const rules = await maintenanceService.getRulesByVehicle(vehicleType, vehicleId);
+        const rules = await maintenanceRuleService.getRulesByVehicle(vehicleType, vehicleId);
         
         res.status(200).json({
             success: true,
@@ -77,7 +78,7 @@ export const getRulesByVehicle = async (req, res) => {
 
 export const updateRule = async (req, res) => {
     try {
-        const rule = await maintenanceService.updateRule(req.params.id, req.body);
+        const rule = await maintenanceRuleService.updateRule(req.params.id, req.body);
         res.status(200).json({
             success: true,
             message: 'Maintenance rule updated successfully',
@@ -93,7 +94,7 @@ export const updateRule = async (req, res) => {
 
 export const deleteRule = async (req, res) => {
     try {
-        await maintenanceService.deleteRule(req.params.id);
+        await maintenanceRuleService.deleteRule(req.params.id);
         res.status(200).json({
             success: true,
             message: 'Maintenance rule deleted successfully'
@@ -109,7 +110,7 @@ export const deleteRule = async (req, res) => {
 export const toggleRuleStatus = async (req, res) => {
     try {
         const { isActive } = req.body;
-        const rule = await maintenanceService.toggleRuleStatus(req.params.id, isActive);
+        const rule = await maintenanceRuleService.toggleRuleStatus(req.params.id, isActive);
         
         res.status(200).json({
             success: true,

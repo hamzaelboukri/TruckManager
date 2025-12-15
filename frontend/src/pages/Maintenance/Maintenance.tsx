@@ -146,7 +146,7 @@ const Maintenance = () => {
                       toast.success(`${result.totalCreated} maintenance(s) créée(s) automatiquement`);
                       fetchRecords();
                     } else if (result.count > 0) {
-                      toast.info(`${result.count} véhicule(s) nécessitent une maintenance`);
+                      toast.success(`${result.count} véhicule(s) nécessitent une maintenance`);
                     } else {
                       toast.success('Aucune maintenance requise');
                     }
