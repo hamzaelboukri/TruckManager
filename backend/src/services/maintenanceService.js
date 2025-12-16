@@ -136,6 +136,7 @@ class MaintenanceService {
         }
         return record;
     }
+    
 
     async checkDueMaintenance(vehicleType, vehicleId, autoCreate = false) {
         await this.validateVehicleExists(vehicleType, vehicleId);

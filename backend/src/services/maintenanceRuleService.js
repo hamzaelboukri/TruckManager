@@ -6,6 +6,7 @@ import trailerService from './trailerService.js';
 import tireService from './tireService.js';
 
 class MaintenanceRuleService {
+
     async createRule(ruleData) {
         if (ruleData.vehicleId) {
             await this.validateVehicleExists(ruleData.vehicleType, ruleData.vehicleId);
@@ -128,7 +129,7 @@ class MaintenanceRuleService {
         return vehicle;
     }
 
-    async checkAndCreateMaintenanceForRule(rule) {
+    async checkAndCreateMaintenanceForRule(rule) {  
         let vehicles = [];
         const createdMaintenances = [];
         
@@ -157,12 +158,12 @@ class MaintenanceRuleService {
             }
         }
 
-        // Ensure vehicles is iterable
         if (!Array.isArray(vehicles)) {
             console.error('Vehicles is not an array:', vehicles);
             vehicles = [];
         }
 
+        //get last one for staret new record
         for (const vehicle of vehicles) {
             const lastMaintenance = await MaintenanceRecord.findOne({
                 vehicleType: rule.vehicleType,
@@ -188,7 +189,7 @@ class MaintenanceRuleService {
                     maintenanceType: rule.maintenanceType,
                     status: { $in: ['Scheduled', 'InProgress'] }
                 });
-
+// creat Maintenance from systeme auto
                 if (!existingPending) {
                     let priority = 'Low';
                     if (urgency === 'Urgent') priority = 'High';
